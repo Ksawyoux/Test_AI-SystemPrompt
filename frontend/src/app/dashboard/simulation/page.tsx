@@ -633,6 +633,11 @@ export default function SimulationPage() {
         );
     }
 
+    // Add this null check for session
+    if (!session) {
+        return null;
+    }
+
     const currentQuestion = currentIndex >= 0 ? session.questions[currentIndex] : null;
 
     // Leave meeting handler - end interview and save results
