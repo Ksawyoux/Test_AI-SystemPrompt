@@ -648,11 +648,13 @@ export default function SimulationPage() {
         );
     }
 
-    // Ensure session is loaded before rendering main content
-    if (!session) {
+       // Ensure session is loaded before rendering main content
+    if (! session) {
         return null;
     }
-    // Leave meeting handler - end interview and save results
+
+    const currentQuestion = currentIndex >= 0 ? session.questions[currentIndex] : null;
+    
     const handleLeave = () => {
         window.speechSynthesis.cancel();
         if (recognitionRef.current) recognitionRef.current.stop();
