@@ -1,8 +1,11 @@
 import os
 from typing import Optional
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load environment variables from the root directory (parent of backend/)
+root_dir = Path(__file__).resolve().parent.parent
+load_dotenv(root_dir / ".env")
 
 url: Optional[str] = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
 key: Optional[str] = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
