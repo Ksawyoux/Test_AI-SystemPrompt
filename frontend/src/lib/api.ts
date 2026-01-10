@@ -144,7 +144,8 @@ export async function saveSessionAnalysis(
     sessionId: string,
     fitAnalysis: any,
     sessionName?: string,
-    userId?: string
+    userId?: string,
+    questions?: Question[]
 ): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/api/save-session-analysis`, {
         method: 'POST',
@@ -155,7 +156,8 @@ export async function saveSessionAnalysis(
             session_id: sessionId,
             fit_analysis: fitAnalysis,
             session_name: sessionName,
-            user_id: userId
+            user_id: userId,
+            questions: questions
         }),
     });
 
@@ -168,6 +170,7 @@ export async function saveSessionAnalysis(
 export interface SessionAnalysis {
     session_id: string;
     fit_analysis: FitAnalysis;
+    questions?: Question[];
     session_name?: string;
     user_id?: string;
     created_at?: string;

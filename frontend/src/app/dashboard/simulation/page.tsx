@@ -109,13 +109,14 @@ export default function SimulationPage() {
             if (user) {
                 setUserId(user.id);
 
-                // Save analysis to DB with user_id for data isolation
+                // Save analysis and questions to DB with user_id for data isolation
                 if (storedSession.fitAnalysis) {
                     saveSessionAnalysis(
                         storedSession.sessionId,
                         storedSession.fitAnalysis,
                         storedSession.sessionName,
-                        user.id
+                        user.id,
+                        storedSession.questions
                     ).catch(err => console.error("Background save failed:", err));
                 }
             }
