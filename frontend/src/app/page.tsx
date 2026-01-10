@@ -4,7 +4,73 @@ import Navbar from "@/components/Navbar";
 import TiltCardGrid from "@/components/TiltCardGrid";
 import Link from "next/link";
 import { Sparkles, Shield, Code, CheckCircle, ArrowRight, Star } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
+
+// ===== SLEEK & PROFESSIONAL ANIMATION VARIANTS =====
+
+// GlassRise: Elements fade in and slide up with backdrop blur feel
+const glassRise: Variants = {
+  hidden: { opacity: 0, y: 40, filter: "blur(10px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.7, ease: [0.25, 0.4, 0.25, 1] }
+  }
+};
+
+// SoftReveal: Gentle opacity fade with slight scale-up (0.95 → 1.0)
+const softReveal: Variants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.5, ease: "easeOut" }
+  }
+};
+
+// FocalEntry: Draws attention with a scale + glow effect
+const focalEntry: Variants = {
+  hidden: { opacity: 0, scale: 0.9, y: 20 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.34, 1.56, 0.64, 1] } // Slight overshoot
+  }
+};
+
+// GhostShift: Subtle, low-opacity transitions between sections
+const ghostShift: Variants = {
+  hidden: { opacity: 0, x: -30 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.5, ease: "easeOut" }
+  }
+};
+
+// Staggered container for child animations
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.2
+    }
+  }
+};
+
+// Navbar slide down
+const navSlide: Variants = {
+  hidden: { y: -100, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }
+  }
+};
 
 export default function Home() {
   return (
@@ -12,9 +78,9 @@ export default function Home() {
       {/* ===== ICON-BASED NAVIGATION ===== */}
       <motion.nav
         className="fixed top-0 left-0 w-full z-50 pt-4 px-4 md:px-8"
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        variants={navSlide}
+        initial="hidden"
+        animate="visible"
       >
         <div className="max-w-4xl mx-auto flex items-center justify-center">
           <div className="bg-white/80 backdrop-blur-xl border border-gray-200/60 rounded-full px-2 py-2 flex items-center gap-1 shadow-lg shadow-gray-200/30">
@@ -74,14 +140,14 @@ export default function Home() {
       </motion.nav>
 
       {/* ===== HERO SECTION ===== */}
-      <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 px-4 overflow-hidden">
+      <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 px-4 overflow-hidden">
         {/* Glow Animation Behind Hero */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-r from-indigo-400/30 via-purple-400/20 to-pink-400/30 rounded-full blur-[100px] animate-pulse pointer-events-none"></div>
 
         <div className="relative max-w-4xl mx-auto text-center z-10">
           {/* Badge */}
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-xs font-medium text-indigo-700 mb-8"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-xs font-medium text-indigo-700 mb-5"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -92,7 +158,7 @@ export default function Home() {
 
           {/* Headline */}
           <motion.h1
-            className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 mb-6 leading-[1.1]"
+            className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 mb-4 leading-[1.1]"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -104,7 +170,7 @@ export default function Home() {
 
           {/* Subheadline */}
           <motion.p
-            className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed"
+            className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8 leading-relaxed"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
@@ -114,7 +180,7 @@ export default function Home() {
 
           {/* Email Input CTA */}
           <motion.div
-            className="flex flex-col items-center gap-4 mb-16"
+            className="flex flex-col items-center gap-3 mb-12"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
@@ -293,16 +359,31 @@ export default function Home() {
       {/* ===== FEATURE CARDS SECTION ===== */}
       <section id="features-detail" className="py-20 md:py-32 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+          <motion.div
+            className="text-center mb-16"
+            variants={glassRise}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+          >
             <p className="text-sm font-semibold text-indigo-600 mb-3">FEATURES</p>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Everything You Need to Ace Interviews</h2>
             <p className="text-lg text-gray-600">Powerful tools designed to help you prepare and succeed</p>
-          </div>
+          </motion.div>
 
-          {/* Feature Cards Grid */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Card 1 - Resume Analysis */}
-            <div className="group bg-white border border-gray-200 rounded-[24px] overflow-hidden hover:shadow-xl transition-all duration-300">
+          {/* Feature Cards Grid - Stagger Container */}
+          <motion.div
+            className="grid md:grid-cols-2 gap-6"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+          >
+            {/* Card 1 - Resume Analysis - SoftReveal */}
+            <motion.div
+              className="group bg-white border border-gray-200 rounded-[24px] overflow-hidden hover:shadow-xl transition-all duration-300"
+              variants={softReveal}
+            >
               {/* Image Area */}
               <div className="h-48 bg-gradient-to-br from-amber-100 via-orange-50 to-yellow-100 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -331,10 +412,13 @@ export default function Home() {
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Card 2 - Live Interview */}
-            <div className="group bg-white border border-gray-200 rounded-[24px] overflow-hidden hover:shadow-xl transition-all duration-300">
+            {/* Card 2 - Live Interview - SoftReveal */}
+            <motion.div
+              className="group bg-white border border-gray-200 rounded-[24px] overflow-hidden hover:shadow-xl transition-all duration-300"
+              variants={softReveal}
+            >
               {/* Content First for this card */}
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -365,10 +449,13 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Card 3 - AI Scoring (Full Width) */}
-            <div className="md:col-span-2 group bg-white border border-gray-200 rounded-[24px] overflow-hidden hover:shadow-xl transition-all duration-300">
+            {/* Card 3 - AI Scoring (Full Width) - FocalEntry */}
+            <motion.div
+              className="md:col-span-2 group bg-white border border-gray-200 rounded-[24px] overflow-hidden hover:shadow-xl transition-all duration-300"
+              variants={focalEntry}
+            >
               <div className="grid md:grid-cols-2 gap-0">
                 {/* Content */}
                 <div className="p-8 flex flex-col justify-center">
@@ -421,8 +508,8 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
