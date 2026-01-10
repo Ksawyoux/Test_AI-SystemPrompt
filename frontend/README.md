@@ -33,4 +33,22 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
+### Important: Monorepo Configuration
+
+Since this is a monorepo with the Next.js frontend in a subdirectory, you **must** configure the Root Directory in Vercel:
+
+1. Go to your Vercel project settings
+2. Navigate to **General** → **Root Directory**
+3. Set the Root Directory to: `frontend`
+4. Save and redeploy
+
+**Without this configuration, you will encounter a `NOT_FOUND` error** because Vercel won't be able to locate the Next.js application entry point.
+
+### Environment Variables
+
+Make sure to add these environment variables in Vercel:
+
+- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
