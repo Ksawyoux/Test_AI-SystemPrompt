@@ -190,17 +190,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== LOGO CLOUD ===== */}
-      <section className="py-16 px-4 border-t border-gray-100">
-        <div className="max-w-5xl mx-auto text-center">
-          <p className="text-sm font-medium text-gray-400 mb-8 uppercase tracking-wider">Trusted by industry leaders</p>
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 opacity-40 grayscale">
-            {["Acme Inc", "TechCorp", "Innovate", "StartupX", "GlobalFirm"].map((name, i) => (
-              <div key={i} className="text-2xl font-bold text-gray-400">{name}</div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* ===== FEATURE TILT CARDS ===== */}
       <section id="features" className="py-20 md:py-32 px-4">
@@ -239,78 +229,219 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== PRICING SECTION ===== */}
-      <section id="pricing" className="py-20 md:py-32 px-4 bg-gray-50">
+      {/* ===== FEATURE CARDS SECTION ===== */}
+      <section id="features-detail" className="py-20 md:py-32 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-indigo-600 mb-3">PRICING</p>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-lg text-gray-600">Choose the plan that fits your hiring needs</p>
+            <p className="text-sm font-semibold text-indigo-600 mb-3">FEATURES</p>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Everything You Need to Ace Interviews</h2>
+            <p className="text-lg text-gray-600">Powerful tools designed to help you prepare and succeed</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { name: "Starter", price: "29", desc: "Perfect for small teams", features: ["50 interviews/month", "Basic analytics", "Email support", "1 team member"] },
-              { name: "Pro", price: "99", desc: "For growing companies", features: ["500 interviews/month", "Advanced analytics", "Priority support", "10 team members", "Custom branding"], popular: true },
-              { name: "Enterprise", price: "299", desc: "For large organizations", features: ["Unlimited interviews", "Full analytics suite", "24/7 phone support", "Unlimited members", "SSO & API access", "Dedicated manager"] },
-            ].map((plan, i) => (
-              <div key={i} className={`relative bg-white border rounded-[24px] p-8 ${plan.popular ? 'border-indigo-500 shadow-xl' : 'border-gray-200'}`}>
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-xs font-semibold">
-                    Most Popular
+          {/* Feature Cards Grid */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Card 1 - Resume Analysis */}
+            <div className="group bg-white border border-gray-200 rounded-[24px] overflow-hidden hover:shadow-xl transition-all duration-300">
+              {/* Image Area */}
+              <div className="h-48 bg-gradient-to-br from-amber-100 via-orange-50 to-yellow-100 relative overflow-hidden">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-32 h-40 bg-white rounded-xl shadow-lg transform rotate-3 group-hover:rotate-0 transition-transform duration-300">
+                    <div className="p-3 space-y-2">
+                      <div className="h-2 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-2 bg-gray-200 rounded w-full"></div>
+                      <div className="h-2 bg-gray-200 rounded w-5/6"></div>
+                      <div className="h-2 bg-amber-400 rounded w-1/2 mt-4"></div>
+                    </div>
                   </div>
-                )}
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                <p className="text-sm text-gray-500 mb-4">{plan.desc}</p>
-                <div className="mb-6">
-                  <span className="text-5xl font-bold text-gray-900">${plan.price}</span>
-                  <span className="text-gray-500">/month</span>
                 </div>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((f, j) => (
-                    <li key={j} className="flex items-center gap-2 text-sm text-gray-600">
-                      <CheckCircle className="w-4 h-4 text-indigo-500" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/login" className={`block text-center py-3 rounded-full font-semibold transition-all ${plan.popular ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
-                  Start Free Trial
+              </div>
+              {/* Content */}
+              <div className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-semibold">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" /><path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" /></svg>
+                    Resume Analysis
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Smart Resume Scanning, Powered by AI</h3>
+                <p className="text-gray-600 text-sm mb-6 leading-relaxed">Upload your resume and get instant analysis. Our AI identifies your strengths, weaknesses, and generates tailored interview questions based on your experience.</p>
+                <Link href="/dashboard" className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all group">
+                  Learn More
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
-            ))}
+            </div>
+
+            {/* Card 2 - Live Interview */}
+            <div className="group bg-white border border-gray-200 rounded-[24px] overflow-hidden hover:shadow-xl transition-all duration-300">
+              {/* Content First for this card */}
+              <div className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-600 text-xs font-semibold">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" /></svg>
+                    Live Interview
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Practice with Real-Time AI Simulation</h3>
+                <p className="text-gray-600 text-sm mb-6 leading-relaxed">Experience realistic interview simulations with voice-enabled Q&A. Get instant transcription and feedback as you answer each question.</p>
+                <Link href="/dashboard" className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all group">
+                  Learn More
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+              {/* Image Area */}
+              <div className="h-48 bg-gradient-to-br from-purple-100 via-indigo-50 to-blue-100 relative overflow-hidden">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <div className="w-8 h-8 bg-purple-500 rounded-full animate-pulse"></div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="h-1.5 bg-purple-300 rounded w-20"></div>
+                      <div className="h-1.5 bg-purple-400 rounded w-16"></div>
+                      <div className="h-1.5 bg-purple-300 rounded w-24"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3 - AI Scoring (Full Width) */}
+            <div className="md:col-span-2 group bg-white border border-gray-200 rounded-[24px] overflow-hidden hover:shadow-xl transition-all duration-300">
+              <div className="grid md:grid-cols-2 gap-0">
+                {/* Content */}
+                <div className="p-8 flex flex-col justify-center">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-semibold">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" /></svg>
+                      AI Scoring
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Instant Feedback & Detailed Reports</h3>
+                  <p className="text-gray-600 text-sm mb-6 leading-relaxed">Get comprehensive evaluation reports with AI-powered scoring. Understand your strengths, areas for improvement, and receive actionable recommendations to boost your interview performance.</p>
+                  <div className="flex flex-wrap gap-3 mb-6">
+                    {["Detailed Scoring", "Personalized Tips", "Progress Tracking", "Export Reports"].map((feature, i) => (
+                      <span key={i} className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-xs font-medium text-gray-700">
+                        <CheckCircle className="w-3 h-3 text-emerald-500" />
+                        {feature}
+                      </span>
+                    ))}
+                  </div>
+                  <Link href="/dashboard" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white rounded-full text-sm font-medium hover:bg-gray-800 transition-all group w-fit">
+                    Get Started
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+                {/* Image Area */}
+                <div className="h-64 md:h-auto bg-gradient-to-br from-emerald-100 via-teal-50 to-cyan-100 relative overflow-hidden">
+                  <div className="absolute inset-0 flex items-center justify-center p-8">
+                    <div className="w-full max-w-xs bg-white rounded-2xl shadow-xl p-4 transform group-hover:scale-105 transition-transform">
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-xs font-semibold text-gray-500">Interview Score</span>
+                        <span className="text-xs text-emerald-500 font-bold">+12%</span>
+                      </div>
+                      <div className="text-4xl font-bold text-gray-900 mb-2">87<span className="text-lg text-gray-400">/100</span></div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                        <div className="bg-emerald-500 h-2 rounded-full" style={{ width: '87%' }}></div>
+                      </div>
+                      <div className="space-y-2">
+                        {[
+                          { label: "Technical Skills", score: 92 },
+                          { label: "Communication", score: 85 },
+                          { label: "Problem Solving", score: 78 },
+                        ].map((item, i) => (
+                          <div key={i} className="flex items-center justify-between text-xs">
+                            <span className="text-gray-600">{item.label}</span>
+                            <span className="font-semibold text-gray-900">{item.score}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ===== TESTIMONIALS ===== */}
-      <section className="py-20 md:py-32 px-4">
+      {/* ===== HOW IT WORKS ===== */}
+      <section id="how-it-works" className="py-20 md:py-32 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-indigo-600 mb-3">TESTIMONIALS</p>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900">Sweet words from our users</h2>
+          {/* Section Header */}
+          <div className="flex flex-col items-center text-center mb-16">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm mb-6">
+              <span className="text-sm font-medium text-gray-900">How it works</span>
+              <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">How it works</h2>
+            <p className="text-gray-600 text-lg max-w-xl">A smooth 3-step process to ace your next interview</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          {/* Steps Grid */}
+          <div className="grid md:grid-cols-3 gap-8 md:gap-12">
             {[
-              { name: "Sarah Chen", role: "Head of HR, TechFlow", quote: "Agentic Interviewer cut our hiring time by 60%. The AI-generated questions are incredibly relevant and insightful." },
-              { name: "Marcus Johnson", role: "CEO, StartupX", quote: "We've interviewed 500+ candidates using this platform. The consistency and quality of insights is unmatched." },
-              { name: "Emily Rodriguez", role: "Talent Lead, Innovate", quote: "Finally, a tool that understands what we need. The automated scoring saves us hours every week." },
-            ].map((testimonial, i) => (
-              <div key={i} className="bg-white border border-gray-200 rounded-[24px] p-8 hover:shadow-lg transition-all">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, j) => (
-                    <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  ))}
+              {
+                step: 1,
+                title: "Upload your resume",
+                description: "Submit your resume and job description. Our AI will analyze both to understand your profile.",
+                icon: (
+                  <svg className="w-6 h-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                ),
+              },
+              {
+                step: 2,
+                title: "AI generates questions",
+                description: "Get personalized interview questions tailored to your experience and the role requirements.",
+                icon: (
+                  <svg className="w-6 h-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                ),
+              },
+              {
+                step: 3,
+                title: "Practice & improve",
+                description: "Answer questions, receive instant AI feedback, and track your progress over time.",
+                icon: (
+                  <svg className="w-6 h-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                ),
+              },
+            ].map((item, index) => (
+              <div key={index} className="flex flex-col items-center text-center">
+                {/* Icon Container */}
+                <div className="relative mb-6">
+                  {/* Dashed orbit circle */}
+                  <div
+                    className="absolute inset-0 w-20 h-20 rounded-full border border-dashed border-amber-400/40"
+                    style={{
+                      transform: `rotate(${index * 45}deg)`,
+                      animation: 'spin 20s linear infinite'
+                    }}
+                  />
+                  {/* Icon circle */}
+                  <div className="relative w-20 h-20 bg-gray-50 border border-white shadow-lg rounded-full flex items-center justify-center">
+                    {item.icon}
+                  </div>
                 </div>
-                <p className="text-gray-700 mb-6 leading-relaxed">"{testimonial.quote}"</p>
-                <div>
-                  <p className="font-semibold text-gray-900">{testimonial.name}</p>
-                  <p className="text-sm text-gray-500">{testimonial.role}</p>
-                </div>
+
+                {/* Content */}
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed max-w-xs">{item.description}</p>
               </div>
             ))}
           </div>
+
+          {/* Connecting line (desktop only) */}
+          <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 h-px border-t border-dashed border-amber-300/50 pointer-events-none" />
         </div>
       </section>
 
