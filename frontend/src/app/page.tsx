@@ -4,12 +4,18 @@ import Navbar from "@/components/Navbar";
 import TiltCardGrid from "@/components/TiltCardGrid";
 import Link from "next/link";
 import { Sparkles, Shield, Code, CheckCircle, ArrowRight, Star } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-white font-sans selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden">
       {/* ===== ICON-BASED NAVIGATION ===== */}
-      <nav className="fixed top-0 left-0 w-full z-50 pt-4 px-4 md:px-8">
+      <motion.nav
+        className="fixed top-0 left-0 w-full z-50 pt-4 px-4 md:px-8"
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
         <div className="max-w-4xl mx-auto flex items-center justify-center">
           <div className="bg-white/80 backdrop-blur-xl border border-gray-200/60 rounded-full px-2 py-2 flex items-center gap-1 shadow-lg shadow-gray-200/30">
             {/* Icon Navigation Items */}
@@ -65,7 +71,7 @@ export default function Home() {
             </Link>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
       {/* ===== HERO SECTION ===== */}
       <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 px-4 overflow-hidden">
@@ -74,25 +80,45 @@ export default function Home() {
 
         <div className="relative max-w-4xl mx-auto text-center z-10">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-xs font-medium text-indigo-700 mb-8">
+          <motion.div
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-xs font-medium text-indigo-700 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             <Sparkles className="w-3 h-3" />
             AI-Powered Interview Platform
-          </div>
+          </motion.div>
 
           {/* Headline */}
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 mb-6 leading-[1.1]">
+          <motion.h1
+            className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 mb-6 leading-[1.1]"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
             Test Yourself with
             <br />
             <span className="text-indigo-600">AI-Powered</span> Interviews
-          </h1>
+          </motion.h1>
 
           {/* Subheadline */}
-          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed">
+          <motion.p
+            className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
             Generate tailored interview questions, conduct live simulations, and get instant AI scoring — all in one powerful platform. Elevate your hiring process.
-          </p>
+          </motion.p>
 
           {/* Email Input CTA */}
-          <div className="flex flex-col items-center gap-4 mb-16">
+          <motion.div
+            className="flex flex-col items-center gap-4 mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
             <form
               className="flex items-center bg-gray-100 rounded-full p-1.5 w-full max-w-md shadow-sm border border-gray-200"
               onSubmit={(e) => {
@@ -138,10 +164,16 @@ export default function Home() {
                 Join <span className="font-semibold text-gray-900">+5,000</span> others on the platform
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* ===== DASHBOARD MOCKUP (Matching App Design) ===== */}
-          <div className="relative max-w-5xl mx-auto">
+          <motion.div
+            className="relative max-w-5xl mx-auto"
+            initial={{ opacity: 0, y: 60 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            viewport={{ once: true, margin: "-100px" }}
+          >
             <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/20 via-purple-500/10 to-pink-500/20 rounded-[32px] blur-2xl opacity-60"></div>
             <div className="relative bg-white border border-gray-200 rounded-[24px] shadow-2xl overflow-hidden">
               {/* Browser Header */}
@@ -254,13 +286,9 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
-
-
-
-
 
       {/* ===== FEATURE CARDS SECTION ===== */}
       <section id="features-detail" className="py-20 md:py-32 px-4 bg-gray-50">
@@ -536,6 +564,6 @@ export default function Home() {
           <p className="text-sm text-gray-500">© 2025 Agentic Interviewer. All rights reserved.</p>
         </div>
       </footer>
-    </main>
+    </main >
   );
 }
