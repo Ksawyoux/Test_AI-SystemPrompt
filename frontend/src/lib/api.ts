@@ -304,7 +304,7 @@ export interface ReportQueryResponse {
 }
 
 export async function queryReport(
-    reportData: Record<string, unknown>,
+    reportData: FitAnalysis | InterviewReport,
     userQuestion: string
 ): Promise<ReportQueryResponse> {
     const response = await fetch(`${API_BASE_URL}/api/query-report`, {
