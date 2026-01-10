@@ -8,29 +8,86 @@ import { Sparkles, Shield, Code, CheckCircle, ArrowRight, Star } from "lucide-re
 export default function Home() {
   return (
     <main className="min-h-screen bg-white font-sans selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden">
-      {/* ===== GLASSMORPHISM NAVIGATION ===== */}
+      {/* ===== ICON-BASED NAVIGATION ===== */}
       <nav className="fixed top-0 left-0 w-full z-50 pt-4 px-4 md:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-white/70 backdrop-blur-xl border border-gray-200/50 rounded-full px-6 py-3 flex items-center justify-between shadow-lg shadow-gray-200/20">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 font-bold text-lg text-gray-900">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">
-                AI
-              </div>
-              <span className="hidden sm:inline">Agentic Interviewer</span>
-            </Link>
+        <div className="max-w-4xl mx-auto flex items-center justify-center">
+          <div className="bg-white/80 backdrop-blur-xl border border-gray-200/60 rounded-full px-2 py-2 flex items-center gap-1 shadow-lg shadow-gray-200/30">
+            {/* Icon Navigation Items */}
+            {[
+              {
+                icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                ),
+                href: "/",
+                label: "Home"
+              },
+              {
+                icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                ),
+                href: "#features-detail",
+                label: "Features"
+              },
+              {
+                icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  </svg>
+                ),
+                href: "/dashboard",
+                label: "Interview"
+              },
+              {
+                icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                ),
+                href: "/dashboard/campaigns",
+                label: "Campaigns"
+              },
+              {
+                icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                ),
+                href: "#",
+                label: "Reports"
+              },
+              {
+                icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                ),
+                href: "#how-it-works",
+                label: "Help"
+              },
+            ].map((item, index) => (
+              <Link
+                key={index}
+                href={item.href}
+                className="p-3 rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all"
+                title={item.label}
+              >
+                {item.icon}
+              </Link>
+            ))}
 
-            {/* Links */}
-            <div className="hidden md:flex items-center gap-8">
-              {[{ label: "Features", href: "#features" }, { label: "How it works", href: "#how-it-works" }, { label: "Blog", href: "#blog" }].map((item) => (
-                <Link key={item.label} href={item.href} className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+            {/* Divider */}
+            <div className="w-px h-6 bg-gray-200 mx-2" />
 
-            {/* CTA */}
-            <Link href="/login" className="bg-indigo-600 text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg">
+            {/* CTA Button */}
+            <Link
+              href="/signup"
+              className="bg-gray-900 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-800 transition-all flex items-center gap-2"
+            >
               Get Started
             </Link>
           </div>
@@ -61,15 +118,53 @@ export default function Home() {
             Generate tailored interview questions, conduct live simulations, and get instant AI scoring — all in one powerful platform. Elevate your hiring process.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Link href="/login" className="bg-indigo-600 text-white px-8 py-4 rounded-full text-base font-semibold hover:bg-indigo-700 transition-all shadow-xl hover:shadow-2xl flex items-center gap-2 group">
-              Start Free Trial
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link href="#product" className="bg-gray-100 text-gray-700 px-8 py-4 rounded-full text-base font-semibold hover:bg-gray-200 transition-all">
-              See How It Works
-            </Link>
+          {/* Email Input CTA */}
+          <div className="flex flex-col items-center gap-4 mb-16">
+            <form
+              className="flex items-center bg-gray-100 rounded-full p-1.5 w-full max-w-md shadow-sm border border-gray-200"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.target as HTMLFormElement;
+                const emailInput = form.querySelector('input[type="email"]') as HTMLInputElement;
+                const email = emailInput?.value || '';
+                window.location.href = `/signup?email=${encodeURIComponent(email)}`;
+              }}
+            >
+              <input
+                type="email"
+                placeholder="Your email address"
+                required
+                className="flex-1 bg-transparent px-5 py-3 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-gray-800 transition-all whitespace-nowrap"
+              >
+                Start Now
+              </button>
+            </form>
+
+            {/* Social Proof */}
+            <div className="flex items-center gap-3">
+              {/* Avatar Stack */}
+              <div className="flex -space-x-2">
+                {[
+                  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=40&h=40&fit=crop&crop=face",
+                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
+                  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
+                ].map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt=""
+                    className="w-8 h-8 rounded-full border-2 border-white object-cover"
+                  />
+                ))}
+              </div>
+              <p className="text-sm text-gray-600">
+                Join <span className="font-semibold text-gray-900">+5,000</span> others on the platform
+              </p>
+            </div>
           </div>
 
           {/* ===== DASHBOARD MOCKUP (Matching App Design) ===== */}

@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
 export default function SignupPage() {
+    const searchParams = useSearchParams();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -12,6 +14,14 @@ export default function SignupPage() {
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
     const supabase = createClient();
+
+    // Pre-fill email from URL parameter
+    useEffect(() => {
+        const emailFromUrl = searchParams.get("email");
+        if (emailFromUrl) {
+            setEmail(emailFromUrl);
+        }
+    }, [searchParams]);
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
