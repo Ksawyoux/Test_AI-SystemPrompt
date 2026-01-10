@@ -479,7 +479,8 @@ OUTPUT (JSON only):
 async def generate_questions_from_jd(
     model: genai.GenerativeModel,
     job_description: str,
-    interview_type: str = "technical"
+    interview_type: str = "technical",
+    question_count: int = 5
 ) -> list[dict]:
     """Generate interview questions based on job description requirements."""
     
@@ -491,13 +492,13 @@ JOB DESCRIPTION:
 INTERVIEW TYPE: {interview_type}
 
 INSTRUCTIONS:
-1. Generate exactly {MAX_QUESTIONS} interview questions based on the KEY REQUIREMENTS from this job description.
-2. Questions should test the specific skills, qualifications, and experiences mentioned in the JD.
-3. **INTERVIEW TYPE FOCUS**:
-   - **Technical**: Coding problems, technical concepts, system design, specific technologies mentioned in JD.
-   - **Abstract Knowledge**: Behavioral (STAR method), leadership, collaboration, situational questions.
-4. Include a mix of "Easy", "Medium", and "Hard".
-5. SCORING RULES:
+1. Generate exactly {question_count} interview questions based on the criteria below.
+2. **INTERVIEW TYPE FOCUS**:
+   - **Technical**: Focus STRICTLY on Data Structures and Algorithms (Simple to Medium). Do NOT ask about specific frameworks or system design unless explicitly required by the user context. Focus on problem-solving logic.
+   - **Abstract Knowledge** (Behavioral): Focus STRICTLY on behavioral questions (STAR method), culture fit, soft skills, and situational judgment. NO technical coding questions.
+   - **Mixed**: A balanced mix of technical and behavioral.
+3. Include a mix of "Easy", "Medium", and "Hard".
+4. SCORING RULES:
    - Hard questions: 10-15 points
    - Medium questions: 7-10 points
    - Easy questions: 3-7 points
@@ -534,7 +535,8 @@ async def run_agentic_chain_with_jd(
     resume_text: str,
     job_description: str,
     api_key: str,
-    interview_type: str = "technical"
+    interview_type: str = "technical",
+    question_count: int = 5
 ) -> Tuple[Optional[dict], Optional[dict], list[dict]]:
     """Execute the agentic chain using job description as the source for questions."""
     
@@ -548,7 +550,7 @@ async def run_agentic_chain_with_jd(
     # Run all analyses in parallel
     profile_task = run_candidate_profile_extraction(model, resume_text)
     fit_task = analyze_candidate_fit(model, resume_text, job_description)
-    questions_task = generate_questions_from_jd(model, job_description, interview_type)
+    questions_task = generate_questions_from_jd(model, job_description, interview_type, question_count)
     
     candidate_profile, fit_analysis, questions = await asyncio.gather(
         profile_task, fit_task, questions_task

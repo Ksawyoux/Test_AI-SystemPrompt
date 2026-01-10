@@ -5,6 +5,7 @@ import { LiveKitRoom, RoomAudioRenderer, useLocalParticipant, useTracks } from "
 import "@livekit/components-styles";
 import { getLiveKitToken, evaluateResponse, Question, EvaluationResponse, saveSessionAnalysis } from "@/lib/api";
 import { getInterviewSession, InterviewSession, saveCompletedInterview, InterviewResponse, CompletedInterview, clearInterviewSession } from "@/lib/storage";
+import { createClient } from "@/lib/supabase/client";
 import AnimatedAvatar from "@/components/AnimatedAvatar";
 import {
     Loader2, Mic, MicOff, Video, VideoOff, MessageSquare,
@@ -78,6 +79,9 @@ export default function SimulationPage() {
     const [violations, setViolations] = useState(0);
     const [showViolationWarning, setShowViolationWarning] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [userId, setUserId] = useState<string | null>(null);  // For data isolation
+
+    const supabase = createClient();
 
     const triggerReaction = (emoji: string) => {
         const id = Date.now();
@@ -100,14 +104,22 @@ export default function SimulationPage() {
         }
         setSession(storedSession);
 
-        // Save analysis to DB if connected
-        if (storedSession.fitAnalysis) {
-            saveSessionAnalysis(
-                storedSession.sessionId,
-                storedSession.fitAnalysis,
-                storedSession.sessionName
-            ).catch(err => console.error("Background save failed:", err));
-        }
+        // Get current user for data isolation
+        supabase.auth.getUser().then(({ data: { user } }: { data: { user: { id: string } | null } }) => {
+            if (user) {
+                setUserId(user.id);
+
+                // Save analysis to DB with user_id for data isolation
+                if (storedSession.fitAnalysis) {
+                    saveSessionAnalysis(
+                        storedSession.sessionId,
+                        storedSession.fitAnalysis,
+                        storedSession.sessionName,
+                        user.id
+                    ).catch(err => console.error("Background save failed:", err));
+                }
+            }
+        });
 
         if (storedSession.interviewType === 'technical') {
             setIsTechnicalMode(true);
@@ -128,7 +140,7 @@ export default function SimulationPage() {
             if (recognitionRef.current) recognitionRef.current.stop();
             if (silenceTimer.current) clearTimeout(silenceTimer.current);
         };
-    }, [router]);
+    }, [router, supabase]);
 
     // Lockdown mode: Request fullscreen and detect tab switches
     useEffect(() => {
@@ -196,6 +208,7 @@ export default function SimulationPage() {
 
 
     // Text-to-Speech function with feminine, human-like voice + D-ID avatar
+    // Text-to-Speech function with feminine, human-like voice
     const speak = useCallback((text: string, onEnd?: () => void) => {
         if (!text || text.trim().length === 0) {
             if (onEnd) onEnd();
@@ -203,51 +216,65 @@ export default function SimulationPage() {
         }
         if (typeof window === "undefined" || !window.speechSynthesis) return;
 
-        // Cancel any ongoing speech
         window.speechSynthesis.cancel();
         setIsAyaSpeaking(true);
         setAyaStatus("Speaking");
 
-        // Add natural pauses for more human-like speech
+        // Refined humanization: Use commas for natural breath pauses 
+        // rather than "...", which can sometimes cause robotic glitching.
         const humanizedText = text
-            .replace(/\. /g, '... ')  // Longer pause after sentences
-            .replace(/\? /g, '?... ') // Pause after questions
-            .replace(/, /g, ',, ');   // Slight pause at commas
+            .replace(/\. /g, ', ')
+            .replace(/\? /g, '?  ')
+            .replace(/! /g, '!  ');
 
         const utterance = new SpeechSynthesisUtterance(humanizedText);
         const browserLang = navigator.language || "en-US";
         const isEnglish = !browserLang.startsWith("fr");
+
         utterance.lang = isEnglish ? "en-US" : "fr-FR";
-        utterance.rate = 0.9;   // Natural speaking pace
-        utterance.pitch = 1.15; // Higher pitch for more feminine voice
-        utterance.volume = 0.95; // Slightly softer for warmth
 
-        // Priority list of premium female voices (most natural sounding)
+        // CALIBRATION:
+        // Rate 0.95 is slightly slower/more thoughtful.
+        // Pitch 1.2 is a clearer feminine frequency without sounding "chipmunk."
+        utterance.rate = 0.95;
+        utterance.pitch = 1.2;
+        utterance.volume = 1.0;
+
         const voices = window.speechSynthesis.getVoices();
-        const preferredVoices = isEnglish
-            ? ["samantha", "karen", "moira", "fiona", "victoria", "zira", "hazel", "susan", "female"]
-            : ["amélie", "amelie", "marie", "virginie", "audrey", "female"];
 
-        // Find the best matching female voice
+        // Priority list: Prioritizing "Natural", "Google", and "Premium" versions
+        const preferredVoices = isEnglish
+            ? [
+                "Google US English",
+                "Microsoft Aria Online", // Very high quality
+                "Microsoft Jenny Online",
+                "Samantha",
+                "Victoria",
+                "Zira"
+            ]
+            : [
+                "Google français",
+                "Microsoft Denise Online",
+                "Julie",
+                "Amélie"
+            ];
+
         let selectedVoice = null;
-        for (const preferred of preferredVoices) {
+
+        // 1. Try to find the premium/natural voices first
+        for (const name of preferredVoices) {
             selectedVoice = voices.find(v =>
-                v.name.toLowerCase().includes(preferred) &&
+                v.name.includes(name) &&
                 (isEnglish ? v.lang.startsWith("en") : v.lang.startsWith("fr"))
             );
             if (selectedVoice) break;
         }
 
-        // Fallback: any female-sounding voice that's NOT male
+        // 2. Fallback to any voice labeled 'female'
         if (!selectedVoice) {
             selectedVoice = voices.find(v =>
-                (isEnglish ? v.lang.startsWith("en") : v.lang.startsWith("fr")) &&
-                !v.name.toLowerCase().includes("male") &&
-                !v.name.toLowerCase().includes("daniel") &&
-                !v.name.toLowerCase().includes("thomas") &&
-                !v.name.toLowerCase().includes("david") &&
-                !v.name.toLowerCase().includes("james") &&
-                !v.name.toLowerCase().includes("alex")
+                v.name.toLowerCase().includes("female") &&
+                (isEnglish ? v.lang.startsWith("en") : v.lang.startsWith("fr"))
             );
         }
 
@@ -255,7 +282,7 @@ export default function SimulationPage() {
 
         utterance.onend = () => {
             setIsAyaSpeaking(false);
-            setAyaStatus("Ready");
+            setAyaStatus("Idle");
             if (onEnd) onEnd();
         };
 
@@ -384,7 +411,7 @@ export default function SimulationPage() {
             // Include code if in technical mode
             const codeToSubmit = isTechnicalMode && code.trim() ? code : undefined;
             const evaluation = await evaluateResponse(
-                question, textToSubmit, session.sessionId, codeToSubmit, session.sessionName
+                question, textToSubmit, session.sessionId, codeToSubmit, session.sessionName, userId || undefined
             );
             clearTimeout(safetyTimeout);
 
@@ -487,7 +514,7 @@ export default function SimulationPage() {
             // Include code if in technical mode
             const codeToSubmit = isTechnicalMode && code.trim() ? code : undefined;
             const evaluation = await evaluateResponse(
-                question, userMessage, session.sessionId, codeToSubmit, session.sessionName
+                question, userMessage, session.sessionId, codeToSubmit, session.sessionName, userId || undefined
             );
 
             if (currentIndex < session.questions.length - 1) {

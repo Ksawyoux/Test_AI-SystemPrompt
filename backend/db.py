@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-url: Optional[str] = os.environ.get("SUPABASE_URL") or os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
-key: Optional[str] = os.environ.get("SUPABASE_KEY") or os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+url: Optional[str] = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+key: Optional[str] = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
 supabase = None
 

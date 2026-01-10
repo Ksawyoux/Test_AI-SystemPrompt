@@ -38,6 +38,7 @@ class Question(BaseModel):
 class EvaluationRequest(BaseModel):
     session_id: Optional[str] = None
     session_name: Optional[str] = None
+    user_id: Optional[str] = None  # Added for user isolation
     question: Question
     response_text: str
     code_submission: Optional[str] = None  # Code from the editor for technical questions
@@ -63,11 +64,39 @@ class ReportRequest(BaseModel):
 def read_root():
     return {"message": "Agentic Interviewer API is running"}
 
+@app.get("/api/check-db")
+def check_db():
+    """Debug endpoint to check DB connection and permissions"""
+    status = {
+        "supabase_initialized": backend.db.supabase is not None,
+        "env_url_present": bool(os.environ.get("NEXT_PUBLIC_SUPABASE_URL")),
+        "env_key_present": bool(os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")),
+        "write_test": "pending"
+    }
+    
+    if backend.db.supabase:
+        try:
+            test_data = {
+                "session_id": "debug-session",
+                "question_id": "debug-q",
+                "question_text": "Debug",
+                "response_text": "Debug",
+                "evaluation": {},
+                "user_id": "debug-user"
+            }
+            backend.db.supabase.table("interview_responses").insert(test_data).execute()
+            status["write_test"] = "success"
+        except Exception as e:
+            status["write_test"] = f"failed: {str(e)}"
+            
+    return status
+
 @app.post("/api/analyze-resume")
 async def analyze_resume(
     file: UploadFile = File(...),
     interview_type: str = Form("technical"),
-    job_description: str = Form(...)  # Now required - JD drives the interview
+    job_description: str = Form(...),  # Now required - JD drives the interview
+    question_count: int = Form(5)
 ):
     """Analyze uploaded resume PDF against job description and generate interview contents."""
     
@@ -90,7 +119,7 @@ async def analyze_resume(
         
         # Run the agentic chain with job description
         profile, fit_analysis, questions = await services.run_agentic_chain_with_jd(
-            resume_text, job_description, api_key, interview_type
+            resume_text, job_description, api_key, interview_type, question_count
         )
         
         if not fit_analysis or not questions:
@@ -117,6 +146,9 @@ async def evaluate_response(request: EvaluationRequest):
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel(services.MODEL_NAME)
         
+        # DEBUG LOGGING
+        print(f"DEBUG EVAL: SessionID={request.session_id}, UserID={request.user_id}, HasDB={backend.db.supabase is not None}", flush=True)
+
         # Convert Pydantic model to dict for the service function
         question_dict = request.question.model_dump()
         
@@ -124,6 +156,7 @@ async def evaluate_response(request: EvaluationRequest):
 
         # Store in Supabase if configured
         if backend.db.supabase and request.session_id:
+            print(f"Attempting to save response for session {request.session_id}...", flush=True)
             try:
                 data = {
                     "session_id": request.session_id,
@@ -134,11 +167,20 @@ async def evaluate_response(request: EvaluationRequest):
                 }
                 if request.session_name:
                     data["session_name"] = request.session_name
+                if request.user_id:
+                    data["user_id"] = request.user_id
+                
+                print(f"Saving data: {data}")
+                
+                # Perform the insert
+                result = backend.db.supabase.table("interview_responses").insert(data).execute()
+                print(f"Save successful. Result: {result}")
 
-                backend.db.supabase.table("interview_responses").insert(data).execute()
             except Exception as e:
-                print(f"Supabase Error: {e}")
+                print(f"CRITICAL SUPABASE ERROR: {e}")
                 # Continue without failing the request
+        else:
+            print("Skipping save: Supabase not configured or missing session_id")
 
         return evaluation
         
@@ -205,11 +247,69 @@ async def get_token(request: TokenRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# --- Session Analysis Endpoints ---
+
+class SessionAnalysisRequest(BaseModel):
+    session_id: str
+    fit_analysis: dict
+    session_name: Optional[str] = None
+    user_id: Optional[str] = None
+
+@app.post("/api/save-session-analysis")
+async def save_session_analysis(request: SessionAnalysisRequest):
+    """Save the CV fit analysis for a session."""
+    
+    if not backend.db.supabase:
+        return {"status": "skipped", "message": "Database not configured"}
+    
+    try:
+        data = {
+            "session_id": request.session_id,
+            "fit_analysis": request.fit_analysis,
+            "session_name": request.session_name,
+        }
+        if request.user_id:
+            data["user_id"] = request.user_id
+            
+        # Upsert - update if exists, insert if not
+        backend.db.supabase.table("session_analyses").upsert(
+            data, 
+            on_conflict="session_id"
+        ).execute()
+        
+        return {"status": "success"}
+    except Exception as e:
+        print(f"Error saving session analysis: {e}")
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/session-analysis/{session_id}")
+async def get_session_analysis(session_id: str, user_id: Optional[str] = None):
+    """Retrieve the CV fit analysis for a session."""
+    
+    if not backend.db.supabase:
+        return None
+    
+    try:
+        query = backend.db.supabase.table("session_analyses").select("*").eq("session_id", session_id)
+        
+        # Filter by user_id if provided for security
+        if user_id:
+            query = query.eq("user_id", user_id)
+            
+        result = query.single().execute()
+        
+        if result.data:
+            return result.data
+        return None
+    except Exception as e:
+        print(f"Error fetching session analysis: {e}")
+        return None
+
 
 # --- Dashboard Endpoints ---
 
 @app.get("/api/dashboard-stats")
-async def get_dashboard_stats():
+async def get_dashboard_stats(user_id: Optional[str] = None):
     """Fetch aggregated dashboard statistics from real interview history."""
     
     if not backend.db.supabase:
@@ -220,8 +320,14 @@ async def get_dashboard_stats():
         }
 
     try:
-        # Fetch all interview responses
-        result = backend.db.supabase.table("interview_responses").select("*").order("created_at", desc=True).execute()
+        # Fetch interview responses - FILTER BY USER_ID for data isolation
+        query = backend.db.supabase.table("interview_responses").select("*")
+        
+        # Filter by user_id if provided, but also include records without user_id (backwards compatibility)
+        if user_id:
+            query = query.or_(f"user_id.eq.{user_id},user_id.is.null")
+        
+        result = query.order("created_at", desc=True).execute()
         rows = result.data if result.data else []
         
         if not rows:

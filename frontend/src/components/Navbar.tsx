@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ThemeToggle } from "./ThemeToggle";
 
 // Dynamically import to avoid SSR issues
 let supabaseClient: ReturnType<typeof import("@/lib/supabase/client").createClient> | null = null;
@@ -18,7 +17,6 @@ export default function Navbar() {
     useEffect(() => {
         const initAuth = async () => {
             try {
-                // Check if env vars are available
                 if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
                     setLoading(false);
                     return;
@@ -32,7 +30,6 @@ export default function Navbar() {
                 setUser(user);
                 setLoading(false);
 
-                // Listen for auth changes
                 const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event: string, session: any) => {
                     setUser(session?.user ?? null);
                 });
@@ -54,82 +51,57 @@ export default function Navbar() {
         }
     };
 
-    return (
-        <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-5xl">
-            <div className="bg-background/90 backdrop-blur-md rounded-full px-6 py-3 nav-shadow flex items-center justify-between border border-border/50">
-                {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 font-bold text-lg text-foreground">
-                    <span className="text-2xl">🎯</span>
-                    <span className="hidden sm:inline">Agentic Interviewer</span>
-                </Link>
+    const navLinks = ["Product", "About", "Blog", "Pricing"];
 
-                {/* Desktop Navigation */}
-                <div className="hidden md:flex items-center gap-8">
-                    <a href="#features" className="text-muted-foreground hover:text-foreground transition-smooth text-sm font-medium">
-                        Features
-                    </a>
-                    <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-smooth text-sm font-medium">
-                        How It Works
-                    </a>
-                    <a href="#use-cases" className="text-muted-foreground hover:text-foreground transition-smooth text-sm font-medium">
-                        Use Cases
-                    </a>
+    return (
+        <nav className="fixed top-0 left-0 w-full z-50 pt-4 px-4 md:px-8 pointer-events-none">
+            <div className="max-w-7xl mx-auto flex items-center justify-between pointer-events-auto">
+
+                {/* Left: Logo + Links (Pill Container) */}
+                <div className="flex items-center gap-1 bg-white/90 backdrop-blur-md px-3 py-2 rounded-full border border-gray-200/50 shadow-sm">
+                    <Link href="/" className="flex items-center gap-2 font-bold text-lg text-foreground hover:opacity-80 transition-opacity pr-4 border-r border-gray-200">
+                        <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white text-xs font-bold">
+                            AI
+                        </div>
+                    </Link>
+                    <div className="hidden md:flex items-center gap-1 pl-2">
+                        {navLinks.map((item) => (
+                            <Link
+                                key={item}
+                                href={`#${item.toLowerCase()}`}
+                                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-black transition-colors rounded-full hover:bg-gray-100"
+                            >
+                                {item}
+                            </Link>
+                        ))}
+                    </div>
                 </div>
 
-                {/* Auth Buttons */}
+                {/* Right: CTA */}
                 <div className="flex items-center gap-3">
-                    <div className="hidden md:flex items-center space-x-4">
-                        <Link href="/login" className="text-gray-600 hover:text-black font-medium transition-colors">
-                            Log in
-                        </Link>
-                        <Link href="/signup" className="bg-black text-white px-5 py-2 rounded-full font-medium hover:bg-gray-800 transition-all hover:shadow-lg hover:-translate-y-0.5">
-                            Sign up
-                        </Link>
-                    </div>
-
                     {loading ? (
-                        <div className="w-20 h-10 bg-muted rounded-full animate-pulse"></div>
+                        <div className="w-28 h-10 bg-gray-200 rounded-full animate-pulse"></div>
                     ) : user && authEnabled ? (
-                        <>
-                            {/* User Avatar */}
-                            <div className="hidden sm:flex items-center gap-2">
-                                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-semibold">
-                                    {user.email?.charAt(0).toUpperCase()}
-                                </div>
-                                <span className="text-sm text-foreground max-w-[120px] truncate">
-                                    {user.email}
-                                </span>
-                            </div>
-                            <button
-                                onClick={handleLogout}
-                                className="bg-muted text-muted-foreground px-4 py-2 rounded-full text-sm font-medium hover:bg-muted/80 transition-smooth"
-                            >
-                                Logout
-                            </button>
-                        </>
+                        <div className="flex items-center gap-3">
+                            <Link href="/dashboard" className="bg-black text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-gray-800 transition-colors shadow-lg">
+                                Dashboard
+                            </Link>
+                        </div>
                     ) : (
-                        <>
-                            <Link
-                                href="/login"
-                                className="hidden sm:block text-muted-foreground hover:text-foreground text-sm font-medium"
-                            >
-                                Login
-                            </Link>
-                            <Link
-                                href="/signup"
-                                className="gradient-purple text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-smooth"
-                            >
-                                Get Started
-                            </Link>
-                        </>
+                        <Link
+                            href="/login"
+                            className="bg-black text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-gray-800 transition-all shadow-lg active:scale-95"
+                        >
+                            Get Free Demo
+                        </Link>
                     )}
 
                     {/* Mobile Menu Button */}
                     <button
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="md:hidden p-2 text-foreground"
+                        className="md:hidden p-2 text-foreground bg-white rounded-full border border-gray-200 shadow-sm"
                     >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             {mobileMenuOpen ? (
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             ) : (
@@ -142,17 +114,28 @@ export default function Navbar() {
 
             {/* Mobile Menu */}
             {mobileMenuOpen && (
-                <div className="md:hidden mt-2 bg-background rounded-2xl p-4 nav-shadow border border-border/50">
-                    <a href="#features" className="block py-2 text-muted-foreground hover:text-foreground">Features</a>
-                    <a href="#how-it-works" className="block py-2 text-muted-foreground hover:text-foreground">How It Works</a>
-                    <a href="#use-cases" className="block py-2 text-muted-foreground hover:text-foreground">Use Cases</a>
-                    {!user && (
-                        <>
-                            <hr className="my-2 border-border" />
-                            <Link href="/login" className="block py-2 text-muted-foreground hover:text-foreground">Login</Link>
-                            <Link href="/signup" className="block py-2 text-primary font-semibold">Sign Up</Link>
-                        </>
-                    )}
+                <div className="md:hidden absolute top-16 left-4 right-4 bg-white rounded-2xl p-5 shadow-xl border border-gray-100 pointer-events-auto animate-in slide-in-from-top-4">
+                    <div className="space-y-1">
+                        {navLinks.map((item) => (
+                            <Link
+                                key={item}
+                                href={`#${item.toLowerCase()}`}
+                                className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-xl"
+                                onClick={() => setMobileMenuOpen(false)}
+                            >
+                                {item}
+                            </Link>
+                        ))}
+                        <hr className="my-3 border-gray-100" />
+                        {!user && (
+                            <Link
+                                href="/login"
+                                className="block w-full text-center bg-black text-white py-3 rounded-xl font-semibold"
+                            >
+                                Get Free Demo
+                            </Link>
+                        )}
+                    </div>
                 </div>
             )}
         </nav>

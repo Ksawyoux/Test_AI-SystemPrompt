@@ -18,18 +18,30 @@ interface InterviewSession {
 export default function CampaignsPage() {
     const [sessions, setSessions] = useState<InterviewSession[]>([]);
     const [loading, setLoading] = useState(true);
+    const [userId, setUserId] = useState<string | null>(null);
     const supabase = createClient();
 
     useEffect(() => {
-        fetchSessions();
-    }, []);
+        // First get the current user, then fetch their sessions
+        const initAndFetch = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setUserId(user.id);
+                await fetchSessions(user.id);
+            } else {
+                setLoading(false);
+            }
+        };
+        initAndFetch();
+    }, [supabase]);
 
-    const fetchSessions = async () => {
+    const fetchSessions = async (currentUserId: string) => {
         try {
-            // Fetch all responses grouped by session_id
+            // Fetch responses for the current user OR sessions without user_id (backwards compatibility)
             const { data, error } = await supabase
                 .from("interview_responses")
                 .select("*")
+                .or(`user_id.eq.${currentUserId},user_id.is.null`)
                 .order("created_at", { ascending: false });
 
             if (error) {
@@ -59,16 +71,12 @@ export default function CampaignsPage() {
             sessionMap.forEach((responses, sessionId) => {
                 let totalScore = 0;
                 let maxScore = 0;
-                let role = "Interview Session";
+                let role = responses[0]?.session_name || "Interview Session";
 
                 responses.forEach((r: any) => {
                     if (r.evaluation) {
                         totalScore += r.evaluation.score || 0;
                         maxScore += r.evaluation.max_points || 10;
-                    }
-                    // Try to extract role from question context
-                    if (r.question_text && r.question_text.includes("role")) {
-                        role = "Interview";
                     }
                 });
 

@@ -7,15 +7,25 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 import { useState, useEffect } from "react";
 import { getDashboardStats, DashboardStats } from "@/lib/api";
+import { createClient } from "@/lib/supabase/client";
 
 export default function DashboardPage() {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
+    const [userId, setUserId] = useState<string | null>(null);
+
+    const supabase = createClient();
 
     useEffect(() => {
-        async function fetchStats() {
+        async function fetchUserAndStats() {
             try {
-                const data = await getDashboardStats();
+                // Get current user
+                const { data: { user } } = await supabase.auth.getUser();
+                const currentUserId = user?.id || null;
+                setUserId(currentUserId);
+
+                // Fetch stats filtered by user_id
+                const data = await getDashboardStats(currentUserId || undefined);
                 setStats(data);
             } catch (error) {
                 console.error("Failed to load stats", error);
@@ -23,8 +33,8 @@ export default function DashboardPage() {
                 setLoading(false);
             }
         }
-        fetchStats();
-    }, []);
+        fetchUserAndStats();
+    }, [supabase]);
 
     const performanceData = stats?.performance_data || [];
     const recentSimulations = stats?.recent_interviews || [];
@@ -47,7 +57,7 @@ export default function DashboardPage() {
                 </div>
                 <Link
                     href="/dashboard/new-simulation"
-                    className="gradient-purple text-white px-6 py-2.5 rounded-xl font-semibold hover:opacity-90 transition-smooth flex items-center gap-2 shadow-lg hover:shadow-purple-500/25"
+                    className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white px-6 py-2.5 rounded-xl font-semibold hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 transition-all flex items-center gap-2 shadow-lg shadow-purple-500/30"
                 >
                     <Plus size={18} />
                     <span>New Simulation</span>

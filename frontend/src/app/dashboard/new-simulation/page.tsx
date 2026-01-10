@@ -22,6 +22,7 @@ export default function NewSimulationPage() {
     const [currentStep, setCurrentStep] = useState(1);
     const [jobDescription, setJobDescription] = useState("");
     const [interviewType, setInterviewType] = useState<"technical" | "abstract">("technical");
+    const [questionCount, setQuestionCount] = useState(5);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const [analysisResult, setAnalysisResult] = useState<ResumeAnalysisResponse | null>(null);
@@ -60,8 +61,9 @@ export default function NewSimulationPage() {
         if (!file || !jobDescription) return;
 
         setIsAnalyzing(true);
+        setIsAnalyzing(true);
         try {
-            const result = await analyzeResume(file, jobDescription, type);
+            const result = await analyzeResume(file, jobDescription, type, questionCount);
             setAnalysisResult(result);
             setIsAnalyzing(false);
             setCurrentStep(5);
@@ -109,31 +111,56 @@ export default function NewSimulationPage() {
 
     return (
         <div className="max-w-4xl mx-auto py-12 px-6">
-            {/* Stepper */}
-            <div className="flex items-center justify-between relative mb-16">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-[var(--border)] -z-10" />
-                <div
-                    className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500 -z-10"
-                    style={{ width: `${((currentStep - 1) / (STEPS.length - 1)) * 100}%` }}
-                />
+            {/* Stepper - Liquid Glass Style */}
+            <div className="relative mb-16">
+                <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-white/60 shadow-lg shadow-purple-500/10 p-6">
+                    <div className="flex items-center justify-between relative">
+                        {/* Background Line */}
+                        <div className="absolute left-10 right-10 top-5 h-0.5 bg-gray-200/80" />
 
-                {STEPS.map((step) => (
-                    <div key={step.id} className="flex flex-col items-center gap-2 bg-[var(--background)] px-2">
+                        {/* Progress Line with Glow */}
                         <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${step.id < currentStep
-                                ? "bg-gradient-to-r from-indigo-500 to-purple-500 border-indigo-500 text-white"
-                                : step.id === currentStep
-                                    ? "bg-[var(--card)] border-indigo-500 text-indigo-600"
-                                    : "bg-[var(--card)] border-[var(--border)] text-[var(--muted-foreground)]"
-                                }`}
-                        >
-                            {step.id < currentStep ? <CheckCircle2 size={20} /> : <step.icon size={18} />}
-                        </div>
-                        <span className={`text-xs font-semibold ${step.id <= currentStep ? "text-indigo-600" : "text-[var(--muted-foreground)]"}`}>
-                            {step.title}
-                        </span>
+                            className="absolute left-10 top-5 h-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-700"
+                            style={{
+                                width: currentStep === 1 ? '0%' : `calc(${((currentStep - 1) / (STEPS.length - 1)) * 100}% - 40px)`,
+                                boxShadow: '0 0 10px rgba(139, 92, 246, 0.6)'
+                            }}
+                        />
+
+                        {STEPS.map((step) => {
+                            const isCompleted = step.id < currentStep;
+                            const isCurrent = step.id === currentStep;
+                            const isClickable = isCompleted;
+
+                            return (
+                                <button
+                                    key={step.id}
+                                    onClick={() => isClickable && setCurrentStep(step.id)}
+                                    disabled={!isClickable}
+                                    className={`relative z-10 flex flex-col items-center gap-3 transition-all duration-300 ${isClickable ? 'cursor-pointer hover:scale-110' : 'cursor-default'}`}
+                                >
+                                    <div
+                                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${isCompleted
+                                            ? "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/40"
+                                            : isCurrent
+                                                ? "bg-white/90 backdrop-blur-md border-2 border-indigo-500 text-indigo-600 shadow-lg shadow-indigo-500/30"
+                                                : "bg-white/60 backdrop-blur-sm border border-gray-200 text-gray-400"
+                                            }`}
+                                    >
+                                        {isCompleted ? <CheckCircle2 size={20} /> : <step.icon size={18} />}
+                                    </div>
+                                    <span className={`text-xs font-bold ${isCompleted ? "text-purple-600" : isCurrent ? "text-indigo-600" : "text-gray-400"
+                                        }`}>
+                                        {step.title}
+                                    </span>
+                                    {isCurrent && (
+                                        <div className="absolute top-0 w-10 h-10 rounded-full bg-indigo-400/30 animate-ping" />
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
-                ))}
+                </div>
             </div>
 
             {/* Step Content */}
@@ -166,7 +193,7 @@ export default function NewSimulationPage() {
 
                         <button
                             onClick={handleJDSubmit}
-                            className="w-full py-4 gradient-purple text-white rounded-xl font-bold hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg"
+                            className="w-full py-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl font-bold hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
                         >
                             Continue <ArrowRight size={20} />
                         </button>
@@ -247,6 +274,25 @@ export default function NewSimulationPage() {
                                     <span className="text-[10px] uppercase font-bold tracking-wider text-pink-600 bg-pink-500/20 px-2 py-1 rounded">Soft Skills</span>
                                 </div>
                             </button>
+                        </div>
+
+                        {/* Question Count Slider */}
+                        <div className="mt-8 p-6 bg-[var(--card)] border hover:border-indigo-500/30 transition-all border-[var(--border)] rounded-2xl">
+                            <div className="flex justify-between items-center mb-4">
+                                <label className="text-lg font-bold text-[var(--foreground)]">Number of Questions</label>
+                                <span className="text-2xl font-bold text-indigo-500">{questionCount}</span>
+                            </div>
+                            <input
+                                type="range"
+                                min="3"
+                                max="10"
+                                value={questionCount}
+                                onChange={(e) => setQuestionCount(parseInt(e.target.value))}
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                            />
+                            <p className="text-sm text-[var(--muted-foreground)] mt-2">
+                                Choose between 3 to 10 questions for your interview session.
+                            </p>
                         </div>
                     </div>
                 )}
@@ -372,10 +418,9 @@ export default function NewSimulationPage() {
                                 </div>
                             </div>
                         </div>
-
                         <button
                             onClick={startSimulation}
-                            className="w-full py-4 gradient-purple text-white rounded-xl font-bold hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25"
+                            className="w-full py-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl font-bold hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
                         >
                             Start Interview Simulation <ArrowRight size={20} />
                         </button>

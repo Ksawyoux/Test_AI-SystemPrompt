@@ -29,7 +29,21 @@ export default function DashboardLayout({
             }
             setLoading(false);
         };
+
         getUser();
+
+        // Listen for auth changes (e.g. profile update)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (session?.user) {
+                setUser(session.user);
+            } else if (event === 'SIGNED_OUT') {
+                router.push('/login');
+            }
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }, [supabase, router]);
 
     if (loading) {

@@ -79,12 +79,14 @@ export async function getLiveKitToken(roomName: string, participantName: string)
 export async function analyzeResume(
     file: File,
     jobDescription: string,
-    interviewType: string = "technical"
+    interviewType: string = "technical",
+    questionCount: number = 5
 ): Promise<ResumeAnalysisResponse> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('job_description', jobDescription);
     formData.append('interview_type', interviewType);
+    formData.append('question_count', questionCount.toString());
 
     const response = await fetch(`${API_BASE_URL}/api/analyze-resume`, {
         method: 'POST',
@@ -104,7 +106,8 @@ export async function evaluateResponse(
     responseText: string,
     sessionId?: string,
     codeSubmission?: string,  // Optional code from the editor
-    sessionName?: string      // Optional session name for display
+    sessionName?: string,     // Optional session name for display
+    userId?: string           // User ID for data isolation
 ): Promise<EvaluationResponse> {
     const response = await fetch(`${API_BASE_URL}/api/evaluate-response`, {
         method: 'POST',
@@ -117,6 +120,7 @@ export async function evaluateResponse(
             session_id: sessionId,
             code_submission: codeSubmission,
             session_name: sessionName,
+            user_id: userId,
         }),
     });
 
@@ -137,7 +141,8 @@ export interface QuestionEvaluation extends EvaluationResponse {
 export async function saveSessionAnalysis(
     sessionId: string,
     fitAnalysis: any,
-    sessionName?: string
+    sessionName?: string,
+    userId?: string
 ): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/api/save-session-analysis`, {
         method: 'POST',
@@ -147,13 +152,46 @@ export async function saveSessionAnalysis(
         body: JSON.stringify({
             session_id: sessionId,
             fit_analysis: fitAnalysis,
-            session_name: sessionName
+            session_name: sessionName,
+            user_id: userId
         }),
     });
 
     if (!response.ok) {
         console.error('Failed to save session analysis');
         // Don't throw to avoid blocking the interview flow
+    }
+}
+
+export interface SessionAnalysis {
+    session_id: string;
+    fit_analysis: FitAnalysis;
+    session_name?: string;
+    user_id?: string;
+    created_at?: string;
+}
+
+export async function getSessionAnalysis(
+    sessionId: string,
+    userId?: string
+): Promise<SessionAnalysis | null> {
+    try {
+        const url = new URL(`${API_BASE_URL}/api/session-analysis/${sessionId}`);
+        if (userId) {
+            url.searchParams.append('user_id', userId);
+        }
+
+        const response = await fetch(url.toString());
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Failed to get session analysis:', error);
+        return null;
     }
 }
 
@@ -239,8 +277,12 @@ export interface DashboardStats {
     recommendations: Recommendation[];
 }
 
-export async function getDashboardStats(): Promise<DashboardStats> {
-    const response = await fetch(`${API_BASE_URL}/api/dashboard-stats`);
+export async function getDashboardStats(userId?: string): Promise<DashboardStats> {
+    const url = userId
+        ? `${API_BASE_URL}/api/dashboard-stats?user_id=${encodeURIComponent(userId)}`
+        : `${API_BASE_URL}/api/dashboard-stats`;
+
+    const response = await fetch(url);
     if (!response.ok) {
         throw new Error('Failed to fetch dashboard stats');
     }
