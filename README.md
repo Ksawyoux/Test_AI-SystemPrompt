@@ -92,12 +92,48 @@ Open [http://localhost:8501](http://localhost:8501) in your browser.
 
 ```
 Test_AI-SystemPrompt/
-├── app.py              # Main application
+├── app.py              # Streamlit application (Python)
 ├── requirements.txt    # Python dependencies
+├── backend/            # FastAPI backend services
+├── frontend/           # Next.js frontend application
+│   ├── src/
+│   ├── package.json
+│   └── vercel.json     # Vercel deployment configuration
 ├── .env                # API keys (not committed)
 ├── .gitignore          # Git ignore rules
 └── README.md           # This file
 ```
+
+## 🚀 Deploying to Vercel (Frontend)
+
+To deploy the Next.js frontend to Vercel:
+
+### Step 1: Import Repository
+
+1. Go to [Vercel](https://vercel.com/new) and import this repository
+
+### Step 2: Configure Root Directory
+
+**⚠️ Critical:** Since this is a monorepo, you **must** set the Root Directory:
+
+1. In the project settings, navigate to **General** → **Root Directory**
+2. Set the Root Directory to: `frontend`
+3. Save the configuration
+
+**Without this step, you will encounter a `NOT_FOUND` error** because Vercel won't locate the Next.js application.
+
+### Step 3: Environment Variables
+
+Add these environment variables in Vercel project settings:
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anonymous key |
+
+### Step 4: Deploy
+
+Redeploy the project. The Next.js frontend should now deploy successfully.
 
 ## 🔧 How It Works
 
