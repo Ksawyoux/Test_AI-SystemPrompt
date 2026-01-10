@@ -18,4 +18,9 @@ if url and key:
     except Exception as e:
         print(f"Warning: Failed to initialize Supabase: {e}")
 else:
-    print("Warning: SUPABASE_URL or SUPABASE_KEY not found in environment variables.")
+    missing = []
+    if not url:
+        missing.append("NEXT_PUBLIC_SUPABASE_URL")
+    if not key:
+        missing.append("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    print(f"Warning: {', '.join(missing)} not found in environment variables.")
