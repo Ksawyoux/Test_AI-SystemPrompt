@@ -55,7 +55,9 @@ export interface InterviewReport {
     hiring_rationale: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// Sanitize URL to remove trailing slash
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+console.log("🚀 Configured API URL:", API_BASE_URL);
 
 // ... existing imports ...
 
