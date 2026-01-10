@@ -192,42 +192,7 @@ export default function Home() {
 
 
 
-      {/* ===== FEATURE TILT CARDS ===== */}
-      <section id="features" className="py-20 md:py-32 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-indigo-600 mb-3">WHY CHOOSE US</p>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900">Why Choose Agentic Interviewer</h2>
-          </div>
 
-          {/* 3D Tilt Card Grid */}
-          <TiltCardGrid
-            cards={[
-              {
-                icon: <Sparkles className="w-7 h-7 text-indigo-600" />,
-                title: "AI-Powered Scanning",
-                description: "Automatically analyze resumes and generate tailored interview questions based on job requirements and candidate experience.",
-                bgColor: "white",
-                iconBgColor: "bg-indigo-100"
-              },
-              {
-                icon: <Shield className="w-7 h-7 text-purple-600" />,
-                title: "AI Interview Simulation",
-                description: "Test yourself by answering questions for both technical and behavioral interviews. Get real-time feedback and scoring.",
-                bgColor: "white",
-                iconBgColor: "bg-purple-100"
-              },
-              {
-                icon: <Code className="w-7 h-7 text-amber-600" />,
-                title: "Coding Assessment",
-                description: "See if your skills at code are as loud as you speak. Practice with real coding challenges and get instant feedback.",
-                bgColor: "white",
-                iconBgColor: "bg-amber-100"
-              },
-            ]}
-          />
-        </div>
-      </section>
 
       {/* ===== FEATURE CARDS SECTION ===== */}
       <section id="features-detail" className="py-20 md:py-32 px-4 bg-gray-50">
