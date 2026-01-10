@@ -254,6 +254,7 @@ async def get_token(request: TokenRequest):
 class SessionAnalysisRequest(BaseModel):
     session_id: str
     fit_analysis: dict
+    questions: Optional[List[dict]] = None
     session_name: Optional[str] = None
     user_id: Optional[str] = None
 
@@ -272,6 +273,8 @@ async def save_session_analysis(request: SessionAnalysisRequest):
         }
         if request.user_id:
             data["user_id"] = request.user_id
+        if request.questions:
+            data["questions"] = request.questions
             
         # Upsert - update if exists, insert if not
         backend.db.supabase.table("session_analyses").upsert(
