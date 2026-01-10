@@ -87,44 +87,6 @@ export default function DashboardPage() {
             </div>
 
             {/* Recent Interviews Grid */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-transparent"
-            >
-                <div className="flex items-center justify-between mb-6 px-1">
-                    <h2 className="text-lg font-bold text-gray-900">Recent Interviews</h2>
-                    <Link href="/dashboard/campaigns" className="text-sm text-indigo-600 hover:text-indigo-700 font-semibold flex items-center gap-1">
-                        View All <ArrowRight size={16} />
-                    </Link>
-                </div>
-
-                {loading ? (
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {[1, 2, 3].map(i => (
-                            <div key={i} className="h-32 bg-gray-100 rounded-2xl animate-pulse" />
-                        ))}
-                    </div>
-                ) : recentSimulations.length > 0 ? (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {recentSimulations.map((sim, i) => (
-                            <motion.div
-                                key={sim.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.3 + (i * 0.1) }}
-                            >
-                                <InterviewCard interview={sim} />
-                            </motion.div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="p-12 text-center bg-white rounded-3xl border border-dashed border-gray-200 text-gray-400">
-                        No reviews yet. Start a simulation to see your progress!
-                    </div>
-                )}
-            </motion.div>
         </div>
     );
 }
