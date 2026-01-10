@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
-export default function SignupPage() {
+function SignupForm() {
     const searchParams = useSearchParams();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -165,5 +165,40 @@ export default function SignupPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+function SignupFallback() {
+    return (
+        <div className="min-h-screen gradient-lavender flex items-center justify-center px-4">
+            <div className="w-full max-w-md">
+                <div className="text-center mb-8">
+                    <span className="inline-flex items-center gap-2 text-2xl font-bold text-gray-900">
+                        <span className="text-3xl">🎯</span>
+                        Agentic Interviewer
+                    </span>
+                </div>
+                <div className="bg-white rounded-2xl card-shadow p-8">
+                    <div className="animate-pulse space-y-5">
+                        <div className="h-8 bg-gray-200 rounded w-2/3 mx-auto"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                        <div className="space-y-5">
+                            <div className="h-12 bg-gray-200 rounded"></div>
+                            <div className="h-12 bg-gray-200 rounded"></div>
+                            <div className="h-12 bg-gray-200 rounded"></div>
+                            <div className="h-12 bg-gray-200 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default function SignupPage() {
+    return (
+        <Suspense fallback={<SignupFallback />}>
+            <SignupForm />
+        </Suspense>
     );
 }
