@@ -57,6 +57,7 @@ class ReportRequest(BaseModel):
     questions: List[Question]
     evaluations: List[QuestionEvaluation]
     candidate_profile: Optional[dict] = None
+    fit_analysis: Optional[dict] = None  # Resume analysis for combined insights
 
 # --- Routes ---
 
@@ -207,7 +208,8 @@ async def generate_report(request: ReportRequest):
             model, 
             questions_dicts, 
             evaluations_dicts, 
-            request.candidate_profile
+            request.candidate_profile,
+            request.fit_analysis
         )
         return report
         
@@ -534,5 +536,65 @@ async def get_did_talk(talk_id: str):
     try:
         result = await did.get_talk(talk_id)
         return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Report Query Endpoint (Ask AI Assistant) ---
+
+class ReportQueryRequest(BaseModel):
+    report_data: dict
+    user_question: str
+
+@app.post("/api/query-report")
+async def query_report(request: ReportQueryRequest):
+    """Query a report with a user's question and get AI-powered answer."""
+    
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured")
+    
+    try:
+        result = await services.query_report(
+            report_data=request.report_data,
+            user_question=request.user_question,
+            api_key=api_key
+        )
+        
+        if not result:
+            raise HTTPException(status_code=500, detail="Failed to process query")
+        
+        return result
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- AI Coach Recommendations Endpoint ---
+
+class AIRecommendationsRequest(BaseModel):
+    candidate_transcript: str
+    source_report: dict
+
+@app.post("/api/ai-recommendations")
+async def get_ai_recommendations(request: AIRecommendationsRequest):
+    """Generate deep-dive AI recommendations using 2-step gap analysis."""
+    
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured")
+    
+    try:
+        result = await services.generate_ai_recommendations(
+            candidate_transcript=request.candidate_transcript,
+            source_report=request.source_report,
+            api_key=api_key
+        )
+        
+        if not result:
+            raise HTTPException(status_code=500, detail="Failed to generate recommendations")
+        
+        return result
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

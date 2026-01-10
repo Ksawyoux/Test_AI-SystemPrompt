@@ -200,7 +200,8 @@ export async function getSessionAnalysis(
 export async function generateReport(
     questions: Question[],
     evaluations: QuestionEvaluation[],
-    candidateProfile?: CandidateProfile
+    candidateProfile?: CandidateProfile,
+    fitAnalysis?: FitAnalysis
 ): Promise<InterviewReport> {
 
     // Transform evaluations to match backend expected format if needed
@@ -215,6 +216,7 @@ export async function generateReport(
             questions,
             evaluations,
             candidate_profile: candidateProfile,
+            fit_analysis: fitAnalysis,
         }),
     });
 
@@ -290,5 +292,76 @@ export async function getDashboardStats(userId?: string): Promise<DashboardStats
     if (!response.ok) {
         throw new Error('Failed to fetch dashboard stats');
     }
+    return response.json();
+}
+
+// Report Query (Ask AI Assistant)
+export interface ReportQueryResponse {
+    answer: string;
+    confidence_level: string;
+    relevant_quotes: string[];
+    source_trace: string;
+}
+
+export async function queryReport(
+    reportData: Record<string, unknown>,
+    userQuestion: string
+): Promise<ReportQueryResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/query-report`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            report_data: reportData,
+            user_question: userQuestion,
+        }),
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to query report');
+    }
+
+    return response.json();
+}
+
+// AI Coach Recommendations (2-Step Analysis)
+export interface AIRecommendation {
+    category: string;
+    content: string;
+}
+
+export interface AIRecommendationsResponse {
+    gaps_analysis: {
+        omitted_technical_concepts: string[];
+        generic_phrases_detected: string[];
+        missing_data_points: string[];
+    };
+    recommendations: AIRecommendation[];
+    confidence_score: number;
+    gaps_summary: string;
+}
+
+export async function getAIRecommendations(
+    candidateTranscript: string,
+    sourceReport: Record<string, unknown>
+): Promise<AIRecommendationsResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/ai-recommendations`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            candidate_transcript: candidateTranscript,
+            source_report: sourceReport,
+        }),
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to get AI recommendations');
+    }
+
     return response.json();
 }

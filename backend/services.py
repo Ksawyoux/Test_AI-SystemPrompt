@@ -151,9 +151,10 @@ def generate_interview_report(
     model: genai.GenerativeModel,
     questions: List[dict],
     evaluations: List[dict],
-    candidate_profile: Optional[dict] = None
+    candidate_profile: Optional[dict] = None,
+    fit_analysis: Optional[dict] = None
 ) -> dict:
-    """Generate comprehensive interview report with Gemini."""
+    """Generate comprehensive interview report combining resume and interview data."""
     
     # Build Q&A summary
     qa_summary = []
@@ -177,54 +178,80 @@ def generate_interview_report(
     profile_info = ""
     if candidate_profile:
         profile_info = f"""
-CANDIDATE PROFILE:
+CANDIDATE PROFILE (from Resume):
 - Current Role: {candidate_profile.get('current_role', 'Unknown')}
 - Experience: {candidate_profile.get('experience_years', 0)} years
 - Education: {candidate_profile.get('educational_level', 'Unknown')}
 """
     
+    # Include resume-based analysis if available
+    resume_analysis = ""
+    if fit_analysis:
+        resume_strengths = fit_analysis.get('strengths', [])
+        resume_weaknesses = fit_analysis.get('weaknesses', [])
+        resume_analysis = f"""
+RESUME ANALYSIS (Pre-Interview):
+Fit Score: {fit_analysis.get('fit_score', 'N/A')}%
+
+Resume Strengths:
+{chr(10).join(['- ' + s for s in resume_strengths[:3]])}
+
+Resume Gaps:
+{chr(10).join(['- ' + w for w in resume_weaknesses[:3]])}
+"""
+    
     prompt = f"""
 You are a Senior HR Manager writing a comprehensive interview evaluation report.
 
+Your task is to synthesize insights from TWO sources:
+1. **Resume Analysis**: What we learned about the candidate BEFORE the interview
+2. **Interview Performance**: How the candidate actually performed during the interview
+
 {profile_info}
 
-INTERVIEW SUMMARY:
+{resume_analysis}
+
+INTERVIEW PERFORMANCE:
 Total Score: {total_score}/{max_total} ({round(total_score/max_total*100 if max_total > 0 else 0)}%)
 
 QUESTION-BY-QUESTION BREAKDOWN:
 {json.dumps(qa_summary, indent=2)}
 
-TASK:
-Generate a comprehensive interview report with:
-1. Overall assessment (2-3 sentences)
-2. 3-5 key strengths demonstrated
-3. 3-5 areas for improvement
-4. 3-5 specific recommendations for the candidate
-5. Hiring recommendation (Strong Hire, Hire, Maybe, No Hire)
+CRITICAL INSTRUCTIONS:
+1. Generate EXACTLY 3 "Points Forts" (Strengths) - combine evidence from both resume AND interview
+2. Generate EXACTLY 3 "Axes d'amélioration" (Areas for Improvement) - based on interview gaps AND resume weaknesses
+3. Each point should be 1-2 sentences, specific and actionable
+4. If interview data is limited, lean more on resume analysis
+5. Write in a professional, encouraging tone
+
+FORMAT RULES:
+- Each strength should follow: "Skill/Quality: Brief explanation with evidence"
+- Each weakness should follow: "Area: Specific improvement suggestion"
+- DO NOT use markdown formatting (no **, no *, no #)
 
 OUTPUT (JSON only):
 {{
     "overall_score": {total_score},
     "max_score": {max_total},
-    "percentage": 75,
-    "overall_assessment": "Brief overall assessment of the candidate's performance",
+    "percentage": {round(total_score/max_total*100 if max_total > 0 else 0)},
+    "overall_assessment": "2-3 sentence summary combining resume fit and interview performance",
     "strengths": [
-        "Strength 1 with specific example",
-        "Strength 2 with specific example",
-        "Strength 3 with specific example"
+        "First Strength: Evidence from resume and/or interview performance",
+        "Second Strength: Evidence from resume and/or interview performance",
+        "Third Strength: Evidence from resume and/or interview performance"
     ],
     "weaknesses": [
-        "Weakness 1 with context",
-        "Weakness 2 with context",
-        "Weakness 3 with context"
+        "First Area: Specific improvement suggestion based on gaps identified",
+        "Second Area: Specific improvement suggestion based on gaps identified",
+        "Third Area: Specific improvement suggestion based on gaps identified"
     ],
     "recommendations": [
-        "Specific actionable recommendation 1",
-        "Specific actionable recommendation 2",
-        "Specific actionable recommendation 3"
+        "Actionable recommendation 1",
+        "Actionable recommendation 2",
+        "Actionable recommendation 3"
     ],
-    "hiring_recommendation": "Hire",
-    "hiring_rationale": "Brief explanation for the hiring recommendation"
+    "hiring_recommendation": "Hire/Strong Hire/Maybe/No Hire",
+    "hiring_rationale": "Brief explanation combining resume fit and interview evidence"
 }}
 """
     
@@ -235,16 +262,37 @@ OUTPUT (JSON only):
         )
         return json.loads(result.text)
     except Exception as e:
+        # Fallback: Use available data to generate basic report
+        fallback_strengths = []
+        fallback_weaknesses = []
+        
+        # Pull from fit_analysis if available
+        if fit_analysis:
+            fallback_strengths = fit_analysis.get('strengths', [])[:3]
+            fallback_weaknesses = fit_analysis.get('weaknesses', [])[:3]
+        
+        # Pull from evaluations if fit_analysis is empty
+        if not fallback_strengths:
+            fallback_strengths = [e.get('feedback_positive', 'Good effort') for e in evaluations[:3] if e.get('feedback_positive')]
+        if not fallback_weaknesses:
+            fallback_weaknesses = [e.get('feedback_improvement', 'Continue practicing') for e in evaluations[:3] if e.get('feedback_improvement')]
+        
+        # Ensure exactly 3
+        while len(fallback_strengths) < 3:
+            fallback_strengths.append("Interview completed successfully")
+        while len(fallback_weaknesses) < 3:
+            fallback_weaknesses.append("Continue practicing interview skills")
+        
         return {
             "overall_score": total_score,
             "max_score": max_total,
             "percentage": round(total_score/max_total*100 if max_total > 0 else 0),
-            "overall_assessment": "Unable to generate detailed assessment.",
-            "strengths": ["Interview completed"],
-            "weaknesses": ["Unable to analyze in detail"],
-            "recommendations": ["Please review responses manually"],
+            "overall_assessment": "Interview completed. Please review responses for detailed feedback.",
+            "strengths": fallback_strengths[:3],
+            "weaknesses": fallback_weaknesses[:3],
+            "recommendations": ["Review technical fundamentals", "Practice behavioral questions", "Work on communication clarity"],
             "hiring_recommendation": "Review Required",
-            "hiring_rationale": f"Error generating report: {e}"
+            "hiring_rationale": f"Error generating detailed report: {e}"
         }
 
 
@@ -558,3 +606,213 @@ async def run_agentic_chain_with_jd(
     
     return candidate_profile, fit_analysis, questions
 
+
+# --- REPORT QUERY (Ask AI Assistant) ---
+
+async def query_report(
+    report_data: dict,
+    user_question: str,
+    api_key: str
+) -> Optional[dict]:
+    """Analyze a report and answer specific questions."""
+    
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel(MODEL_NAME)
+    except Exception as e:
+        print(f"Failed to initialize Gemini: {e}")
+        return None
+    
+    # Build report text from structured data
+    report_text = f"""
+INTERVIEW REPORT SUMMARY:
+- Overall Score: {report_data.get('percentage', 0)}%
+- Total Points: {report_data.get('overall_score', 0)}/{report_data.get('max_score', 100)}
+- Hiring Recommendation: {report_data.get('hiring_recommendation', 'N/A')}
+
+OVERALL ASSESSMENT:
+{report_data.get('overall_assessment', 'No assessment available.')}
+
+STRENGTHS:
+{chr(10).join(['- ' + s for s in report_data.get('strengths', [])])}
+
+AREAS FOR IMPROVEMENT:
+{chr(10).join(['- ' + w for w in report_data.get('weaknesses', [])])}
+
+RECOMMENDATIONS:
+{chr(10).join(['- ' + r for r in report_data.get('recommendations', [])])}
+
+HIRING RATIONALE:
+{report_data.get('hiring_rationale', 'No rationale provided.')}
+"""
+
+    prompt = f"""
+You are an Expert Report Analyst. Your goal is to answer questions based strictly on the provided report.
+
+REPORT CONTENT:
+{report_text}
+
+USER QUESTION:
+{user_question}
+
+INSTRUCTIONS:
+1. Extract relevant data points and quotes from the report.
+2. Synthesize an answer that directly addresses the user question.
+3. The answer should be relevant, interesting and reveal a true insight about the report.
+4. Identify the "Confidence Level" of your answer (Low, Medium, High).
+5. Provide a "Source Trace" listing which sections of the report were used.
+
+OUTPUT FORMAT (JSON only):
+{{
+    "answer": "The detailed response",
+}}
+"""
+
+    try:
+        response = await model.generate_content_async(
+            prompt,
+            generation_config={"response_mime_type": "application/json"}
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        print(f"Report query failed: {e}")
+        return {
+            "answer": "I was unable to analyze the report at this time. Please try again.",
+        }
+
+
+# --- AI COACH RECOMMENDATIONS (2-Step Analysis) ---
+
+async def generate_ai_recommendations(
+    candidate_transcript: str,
+    source_report: dict,
+    api_key: str
+) -> dict:
+    """
+    Generate deep-dive AI recommendations using a 2-step analysis:
+    Step 1: Analyze gaps between candidate response and source report
+    Step 2: Generate actionable recommendations based on gaps
+    """
+    
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel(MODEL_NAME)
+    except Exception as e:
+        print(f"Failed to initialize Gemini: {e}")
+        return None
+    
+    # Build source report text
+    source_report_text = f"""
+REPORT SUMMARY:
+- Fit Score: {source_report.get('fit_score', 'N/A')}%
+- Strengths: {', '.join(source_report.get('strengths', [])[:3])}
+- Weaknesses: {', '.join(source_report.get('weaknesses', [])[:3])}
+- Technical Areas: {source_report.get('summary', 'No summary available')}
+"""
+    
+    # === STEP 1: Analyze Gaps ===
+    prompt_step1 = f"""
+Analyze the candidate's response against the source report.
+
+CANDIDATE TRANSCRIPT:
+{candidate_transcript}
+
+SOURCE REPORT:
+{source_report_text}
+
+INSTRUCTIONS:
+1. List all technical terms mentioned in the report that the candidate OMITTED.
+2. Identify specific "generic" phrases used by the candidate (e.g., "very efficient," "highly scalable") that lack data-backed evidence.
+3. Provide the results in a structured format.
+
+OUTPUT FORMAT (JSON only):
+{{
+    "omitted_technical_concepts": ["concept1", "concept2", "concept3"],
+    "generic_phrases_detected": ["phrase1", "phrase2"],
+    "missing_data_points": ["datapoint1", "datapoint2"]
+}}
+"""
+    
+    try:
+        # Step 1: Get gaps analysis
+        step1_response = await model.generate_content_async(
+            prompt_step1,
+            generation_config={"response_mime_type": "application/json"}
+        )
+        gaps_analysis = json.loads(step1_response.text)
+        
+        # === STEP 2: Generate Recommendations ===
+        prompt_step2 = f"""
+Using the extracted gaps, generate 3 specific, deep-dive recommendations for the AI Coach sidebar.
+
+GAPS ANALYSIS:
+- Omitted Technical Concepts: {', '.join(gaps_analysis.get('omitted_technical_concepts', []))}
+- Generic Phrases Detected: {', '.join(gaps_analysis.get('generic_phrases_detected', []))}
+- Missing Data Points: {', '.join(gaps_analysis.get('missing_data_points', []))}
+
+ORIGINAL REPORT CONTEXT:
+{source_report_text}
+
+INSTRUCTIONS:
+1. For every "generic phrase" identified, provide a technical replacement using concepts from the report.
+2. Formulate "Technical Depth" advice that requires the candidate to explain the LOGIC, not just state the result.
+3. Ensure the advice is pragmatically useful and actionable.
+4. Generate exactly 3 recommendations in three categories: Technical Depth, Communication Style, Speaking Pace.
+
+OUTPUT FORMAT (JSON only):
+{{
+    "recommendations": [
+        {{
+            "category": "Technical Depth",
+            "content": "Specific actionable advice about technical concepts to mention and how to explain them with logic"
+        }},
+        {{
+            "category": "Communication Style", 
+            "content": "Specific advice about replacing generic phrases with data-backed statements"
+        }}
+    ],
+    "confidence_score": 85,
+    "gaps_summary": "Brief summary of most critical gaps identified"
+}}
+"""
+        
+        step2_response = await model.generate_content_async(
+            prompt_step2,
+            generation_config={"response_mime_type": "application/json"}
+        )
+        recommendations = json.loads(step2_response.text)
+        
+        # Combine both analyses
+        return {
+            "gaps_analysis": gaps_analysis,
+            "recommendations": recommendations.get("recommendations", []),
+            "confidence_score": recommendations.get("confidence_score", 80),
+            "gaps_summary": recommendations.get("gaps_summary", "")
+        }
+        
+    except Exception as e:
+        print(f"AI Recommendations failed: {e}")
+        # Return fallback recommendations
+        return {
+            "gaps_analysis": {
+                "omitted_technical_concepts": [],
+                "generic_phrases_detected": [],
+                "missing_data_points": []
+            },
+            "recommendations": [
+                {
+                    "category": "Technical Depth",
+                    "content": "Focus on articulating your approach, explain the logic, and provide concrete solutions."
+                },
+                {
+                    "category": "Communication Style",
+                    "content": "Your communication is clear. Ensure you maintain this structure."
+                },
+                {
+                    "category": "Speaking Pace",
+                    "content": "Maintain a steady 130-150 wpm pace. Pause for emphasis on key technical terms."
+                }
+            ],
+            "confidence_score": 75,
+            "gaps_summary": "Analysis completed with limited data."
+        }

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Share2, Download, MessageSquare, Mic, Zap, ThumbsUp, AlertCircle, CheckCircle2, Loader2, TrendingUp, TrendingDown, FileText, Sparkles, Send, X, HelpCircle, Info } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { getSessionAnalysis, SessionAnalysis } from "@/lib/api";
+import { getSessionAnalysis, SessionAnalysis, queryReport, ReportQueryResponse } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ResponseData {
@@ -32,6 +32,8 @@ export default function ReportPage() {
     const [unauthorized, setUnauthorized] = useState(false);
     const [queryOpen, setQueryOpen] = useState(false);
     const [queryText, setQueryText] = useState("");
+    const [queryResponse, setQueryResponse] = useState<ReportQueryResponse | null>(null);
+    const [queryLoading, setQueryLoading] = useState(false);
     const supabase = createClient();
 
     useEffect(() => {
@@ -110,6 +112,41 @@ export default function ReportPage() {
             month: "short",
             year: "numeric"
         });
+    };
+
+    const handleQuery = async (question: string) => {
+        if (!question.trim()) return;
+
+        setQueryLoading(true);
+        setQueryResponse(null);
+
+        // Build report data from available session analysis or responses
+        const reportData = sessionAnalysis?.fit_analysis || {
+            percentage: globalScore,
+            overall_score: totalScore,
+            max_score: maxScore,
+            strengths: strengths,
+            weaknesses: improvements,
+            recommendations: [],
+            hiring_recommendation: globalScore >= 70 ? "Hire" : "Review Required",
+            overall_assessment: `Candidate scored ${globalScore}% overall.`,
+            hiring_rationale: `Based on ${responses.length} questions answered.`
+        };
+
+        try {
+            const result = await queryReport(reportData, question);
+            setQueryResponse(result);
+        } catch (error) {
+            console.error("Query failed:", error);
+            setQueryResponse({
+                answer: "Sorry, I couldn't process your question. Please try again.",
+                confidence_level: "Low",
+                relevant_quotes: [],
+                source_trace: "Error"
+            });
+        } finally {
+            setQueryLoading(false);
+        }
     };
 
     if (loading) {
@@ -509,18 +546,32 @@ export default function ReportPage() {
                                     type="text"
                                     value={queryText}
                                     onChange={(e) => setQueryText(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" && queryText.trim()) {
+                                            handleQuery(queryText);
+                                        }
+                                    }}
                                     placeholder="Ask about your performance, strengths, or how to improve..."
                                     className="flex-1 bg-transparent border-none outline-none text-gray-800 placeholder-gray-400 font-medium h-10 px-2"
                                     autoFocus
+                                    disabled={queryLoading}
                                 />
                                 <div className="flex items-center gap-2">
                                     {queryText && (
-                                        <button className="p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors">
-                                            <Send size={18} />
+                                        <button
+                                            onClick={() => handleQuery(queryText)}
+                                            disabled={queryLoading}
+                                            className="p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                                        >
+                                            {queryLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                                         </button>
                                     )}
                                     <button
-                                        onClick={() => setQueryOpen(false)}
+                                        onClick={() => {
+                                            setQueryOpen(false);
+                                            setQueryResponse(null);
+                                            setQueryText("");
+                                        }}
                                         className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
                                     >
                                         <X size={18} />
@@ -528,11 +579,41 @@ export default function ReportPage() {
                                 </div>
                             </div>
 
-                            {/* Suggested Queries */}
-                            {!queryText && (
+                            {/* AI Response */}
+                            <AnimatePresence>
+                                {queryResponse && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="p-4 border-t border-gray-100"
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl">
+                                                <Sparkles size={16} className="text-white" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-sm text-gray-800 leading-relaxed">
+                                                    {queryResponse.answer}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            {/* Suggested Queries - only show if no response */}
+                            {!queryText && !queryResponse && (
                                 <div className="flex gap-2 p-2 overflow-x-auto">
                                     {["How can I improve?", "Summary of strengths", "Technical depth analysis"].map((q, i) => (
-                                        <button key={i} onClick={() => setQueryText(q)} className="px-3 py-1.5 bg-gray-50 hover:bg-indigo-50 text-xs font-semibold text-gray-500 hover:text-indigo-600 rounded-lg transition-colors whitespace-nowrap">
+                                        <button
+                                            key={i}
+                                            onClick={() => {
+                                                setQueryText(q);
+                                                handleQuery(q);
+                                            }}
+                                            className="px-3 py-1.5 bg-gray-50 hover:bg-indigo-50 text-xs font-semibold text-gray-500 hover:text-indigo-600 rounded-lg transition-colors whitespace-nowrap"
+                                        >
                                             {q}
                                         </button>
                                     ))}

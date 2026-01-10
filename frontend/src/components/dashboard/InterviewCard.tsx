@@ -19,11 +19,11 @@ export default function InterviewCard({ interview }: InterviewCardProps) {
     return (
         <motion.div
             whileHover={{ y: -4, boxShadow: "0 12px 24px -10px rgba(0,0,0,0.08)" }}
-            className={`group relative p-5 rounded-2xl border transition-all cursor-pointer bg-white ${isOutlier ? "border-indigo-200 ring-1 ring-indigo-50" : "border-gray-100 hover:border-gray-200"
+            className={`group relative p-6 rounded-2xl border transition-all cursor-pointer bg-white ${isOutlier ? "border-indigo-200 ring-1 ring-indigo-50" : "border-gray-100 hover:border-gray-200"
                 }`}
         >
-            <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
+            <div className="flex justify-between items-start mb-5">
+                <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg transition-colors ${isSuccess ? "bg-green-50 text-green-600" :
                         interview.score < 30 ? "bg-red-50 text-red-600" :
                             "bg-gray-50 text-gray-600"
@@ -34,7 +34,7 @@ export default function InterviewCard({ interview }: InterviewCardProps) {
                         <h3 className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
                             {interview.role}
                         </h3>
-                        <p className="text-xs text-gray-500 font-medium">{interview.date}</p>
+                        <p className="text-xs text-gray-500 font-medium mt-1">{interview.date}</p>
                     </div>
                 </div>
 
@@ -62,15 +62,15 @@ export default function InterviewCard({ interview }: InterviewCardProps) {
                 </div>
             </div>
 
-            <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50">
+            <div className="flex items-center justify-between pt-5 border-t border-gray-100">
                 <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-1.5 text-xs text-gray-500 font-medium bg-gray-50 px-2 py-1 rounded-md">
-                        <Clock size={11} className="text-gray-400" />
+                    <span className="flex items-center gap-1.5 text-xs text-gray-500 font-medium bg-gray-50 px-3 py-1.5 rounded-lg">
+                        <Clock size={12} className="text-gray-400" />
                         25m
                     </span>
                     {isOutlier && (
-                        <span className="flex items-center gap-1.5 text-xs text-indigo-600 font-semibold bg-indigo-50 px-2 py-1 rounded-md">
-                            <AlertTriangle size={11} />
+                        <span className="flex items-center gap-1.5 text-xs text-indigo-600 font-semibold bg-indigo-50 px-3 py-1.5 rounded-lg">
+                            <AlertTriangle size={12} />
                             Insight
                         </span>
                     )}
