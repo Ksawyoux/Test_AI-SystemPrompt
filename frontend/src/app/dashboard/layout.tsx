@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { User } from "@supabase/supabase-js";
+import { User, AuthChangeEvent, Session } from "@supabase/supabase-js";
 import DashboardNavbar from "@/components/DashboardNavbar";
 
 export default function DashboardLayout({
@@ -33,7 +33,7 @@ export default function DashboardLayout({
         getUser();
 
         // Listen for auth changes (e.g. profile update)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
             if (session?.user) {
                 setUser(session.user);
             } else if (event === 'SIGNED_OUT') {
