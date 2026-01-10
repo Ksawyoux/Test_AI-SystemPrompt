@@ -265,6 +265,8 @@ export interface RecentInterview {
 export interface PerformanceDataPoint {
     name: string;
     score: number;
+    technical_score?: number;
+    communication_score?: number;
     date: string;
 }
 

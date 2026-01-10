@@ -140,14 +140,14 @@ export default function Home() {
       </motion.nav>
 
       {/* ===== HERO SECTION ===== */}
-      <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 px-4 overflow-hidden">
+      <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 px-4 overflow-hidden">
         {/* Glow Animation Behind Hero */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-r from-indigo-400/30 via-purple-400/20 to-pink-400/30 rounded-full blur-[100px] animate-pulse pointer-events-none"></div>
 
         <div className="relative max-w-4xl mx-auto text-center z-10">
           {/* Badge */}
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-xs font-medium text-indigo-700 mb-5"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-xs font-medium text-indigo-700 mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -158,7 +158,7 @@ export default function Home() {
 
           {/* Headline */}
           <motion.h1
-            className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 mb-4 leading-[1.1]"
+            className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 mb-6 leading-[1.1]"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -170,7 +170,7 @@ export default function Home() {
 
           {/* Subheadline */}
           <motion.p
-            className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8 leading-relaxed"
+            className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
@@ -180,7 +180,7 @@ export default function Home() {
 
           {/* Email Input CTA */}
           <motion.div
-            className="flex flex-col items-center gap-3 mb-12"
+            className="flex flex-col items-center gap-4 mb-16"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
