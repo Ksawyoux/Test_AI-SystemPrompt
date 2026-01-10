@@ -680,6 +680,11 @@ export default function SimulationPage() {
         return null;
     }
 
+    // Add this null check for session
+    if (!session) {
+        return null;
+    }
+
     const currentQuestion = currentIndex >= 0 ? session.questions[currentIndex] : null;
     
     const handleLeave = () => {
