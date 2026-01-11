@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Sparkles, ChevronRight, Activity, ArrowUpRight, BrainCircuit } from "lucide-react";
+import { Sparkles, ArrowUpRight, BrainCircuit, Zap, X, MessageSquare, Target } from "lucide-react";
 import { Recommendation } from "@/lib/api";
 
 interface RecommendationSidebarProps {
@@ -13,127 +13,123 @@ interface RecommendationSidebarProps {
 export default function RecommendationSidebar({ recommendations, loading }: RecommendationSidebarProps) {
     const [isExpanded, setIsExpanded] = useState(false);
 
-    // Mock range data for "Speaking Pace" visualization
-    const pace = 138; // wpm
-    const paceMin = 100;
-    const paceMax = 200;
-    const paceTargetMin = 130;
-    const paceTargetMax = 150;
-    const pacePercentage = ((pace - paceMin) / (paceMax - paceMin)) * 100;
+    // Animation Variants
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 10 },
+        visible: { opacity: 1, y: 0 }
+    };
 
     return (
-        <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-3xl p-6 text-white shadow-xl flex flex-col h-full relative overflow-hidden">
-            {/* Background Glow */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="bg-[#0f111a] border border-white/10 rounded-3xl p-5 text-white shadow-2xl flex flex-col h-full max-h-[600px] relative overflow-hidden">
+            {/* Background Aesthetic Blur */}
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-600/20 rounded-full blur-3xl" />
 
+            {/* Header */}
             <div className="flex items-center gap-3 mb-8 relative z-10">
-                <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner">
-                    <BrainCircuit size={20} className="text-indigo-300" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center shadow-lg ring-1 ring-white/20">
+                    <BrainCircuit size={20} className="text-white" />
                 </div>
                 <div>
-                    <h2 className="text-lg font-bold leading-tight">AI Coach</h2>
+                    <h2 className="text-md font-bold leading-tight">AI Insights</h2>
                     <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                        <span className="text-xs text-indigo-200 font-medium">92% Confidence</span>
+                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                        <span className="text-[10px] text-indigo-300 font-bold uppercase tracking-tighter">Live Analysis</span>
                     </div>
                 </div>
             </div>
 
-            <div className="space-y-6 flex-1 relative z-10 overflow-y-auto pr-2 custom-scrollbar">
-                {/* Dynamic Range Bar Card */}
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                    <div className="flex justify-between items-end mb-2">
-                        <span className="text-xs text-indigo-200 font-medium">Speaking Pace</span>
-                        <span className="text-lg font-bold">{pace} <span className="text-xs font-normal text-white/60">wpm</span></span>
-                    </div>
-                    {/* Range Visual */}
-                    <div className="h-6 w-full bg-white/10 rounded-full relative">
-                        {/* Target Zone */}
-                        <div
-                            className="absolute top-0 bottom-0 bg-green-500/20 border-x border-green-500/30"
-                            style={{
-                                left: `${((paceTargetMin - paceMin) / (paceMax - paceMin)) * 100}%`,
-                                width: `${((paceTargetMax - paceTargetMin) / (paceMax - paceMin)) * 100}%`
-                            }}
-                        />
-                        {/* User Marker */}
-                        <motion.div
-                            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg border-2 border-indigo-500 z-10"
-                            initial={{ left: "0%" }}
-                            animate={{ left: `${pacePercentage}%` }}
-                            transition={{ duration: 1, type: "spring" }}
-                        />
-                        {/* Dotted Lines */}
-                        <div className="absolute inset-0 flex justify-between px-2 items-center opacity-30">
-                            {[...Array(5)].map((_, i) => <div key={i} className="w-px h-2 bg-white" />)}
-                        </div>
-                    </div>
-                    <div className="mt-2 text-[10px] text-white/50 flex justify-between">
-                        <span>Slow</span>
-                        <span className="text-green-400">Target</span>
-                        <span>Fast</span>
-                    </div>
+            {/* Recommendations List */}
+            <div className="space-y-4 flex-1 relative z-10 overflow-y-auto pr-1 custom-scrollbar">
+                <div className="flex items-center gap-2 px-1 mb-2">
+                    <Zap size={12} className="text-amber-400 fill-amber-400" />
+                    <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Strategic Actions</span>
                 </div>
 
-                {/* Recommendations List */}
                 {loading ? (
-                    <div className="text-center py-8 text-white/40 animate-pulse">Analyzing patterns...</div>
-                ) : recommendations.length > 0 ? (
-                    recommendations.slice(0, 3).map((rec, i) => (
-                        <div key={i} className="group cursor-pointer">
-                            <div className="flex items-center justify-between mb-1">
-                                <h3 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">{rec.category}</h3>
-                                <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-300" />
-                            </div>
-                            <p className="text-xs text-indigo-100/70 leading-relaxed border-l-2 border-white/10 pl-3 py-1 group-hover:border-indigo-400 transition-colors">
-                                {rec.content}
-                            </p>
-                        </div>
-                    ))
+                    <div className="space-y-3">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="h-24 w-full bg-white/5 animate-pulse rounded-2xl" />
+                        ))}
+                    </div>
                 ) : (
-                    <div className="text-white/40 text-sm">Start a simulation to generate insights.</div>
+                    <motion.div
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="space-y-3"
+                    >
+                        {recommendations.length > 0 ? (
+                            recommendations.map((rec, i) => (
+                                <motion.div
+                                    key={i}
+                                    variants={itemVariants}
+                                    className="group bg-white/[0.03] hover:bg-white/[0.07] border border-white/5 rounded-2xl p-4 transition-all duration-200"
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="flex items-center gap-2">
+                                            {rec.category.toLowerCase().includes('technical') ?
+                                                <Target size={12} className="text-indigo-400" /> :
+                                                <MessageSquare size={12} className="text-purple-400" />
+                                            }
+                                            <span className="text-[10px] font-black uppercase tracking-tight text-indigo-300/80">
+                                                {rec.category}
+                                            </span>
+                                        </div>
+                                        <ArrowUpRight size={14} className="text-white/10 group-hover:text-white transition-colors" />
+                                    </div>
+                                    <p className="text-[12px] text-white/70 leading-relaxed font-medium">
+                                        {rec.content}
+                                    </p>
+                                </motion.div>
+                            ))
+                        ) : (
+                            <div className="text-center py-10 opacity-30 text-xs italic">
+                                No recommendations generated yet.
+                            </div>
+                        )}
+                    </motion.div>
                 )}
             </div>
 
-            {/* Expandable Action Button */}
+            {/* Action Button */}
             <motion.button
-                onClick={() => setIsExpanded(!isExpanded)}
-                whileHover={{ scale: 1.02 }}
+                onClick={() => setIsExpanded(true)}
+                whileHover={{ y: -1 }}
                 whileTap={{ scale: 0.98 }}
-                className="mt-6 w-full py-3 bg-white text-indigo-900 font-bold rounded-xl text-sm hover:bg-indigo-50 transition-colors shadow-lg relative z-10 flex items-center justify-center gap-2"
+                className="mt-6 w-full py-3.5 bg-gradient-to-r from-indigo-600/80 to-purple-600/80 hover:from-indigo-600 hover:to-purple-600 border border-white/10 text-white font-bold rounded-2xl text-[11px] uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
             >
-                <Sparkles size={16} className="text-indigo-600" />
-                {isExpanded ? "Close Plan" : "View Personalized Plan"}
+                <Sparkles size={14} />
+                View Full Roadmap
             </motion.button>
 
-            {/* Expanded Overlay (Simplified for UI demo) */}
+            {/* Expanded Modal Overlay */}
             <AnimatePresence>
                 {isExpanded && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
+                        initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="absolute inset-0 bg-white z-20 p-6 text-gray-900 rounded-3xl overflow-y-auto"
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="absolute inset-0 bg-[#0f111a] z-50 p-6 flex flex-col"
                     >
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-bold">Your Roadmap</h3>
-                            <button onClick={() => setIsExpanded(false)} className="p-1 hover:bg-gray-100 rounded-full">
-                                <ChevronRight className="rotate-90" />
+                        <div className="flex justify-between items-center mb-8">
+                            <h3 className="text-xl font-black">Coaching Plan</h3>
+                            <button
+                                onClick={() => setIsExpanded(false)}
+                                className="p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
+                            >
+                                <X size={20} />
                             </button>
                         </div>
-                        <div className="space-y-4">
-                            {[1, 2, 3].map((step) => (
-                                <div key={step} className="flex gap-4">
-                                    <div className="flex flex-col items-center">
-                                        <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">
-                                            {step}
-                                        </div>
-                                        {step !== 3 && <div className="w-px h-full bg-indigo-100 my-1" />}
-                                    </div>
-                                    <div className="pb-6">
-                                        <h4 className="font-bold text-sm">Phase {step}: Mastery</h4>
-                                        <p className="text-xs text-gray-500 mt-1">Focus on advanced technical concepts and system design patterns.</p>
-                                    </div>
+                        <div className="space-y-6 overflow-y-auto pr-2">
+                            {recommendations.map((rec, idx) => (
+                                <div key={idx} className="border-l-2 border-indigo-500/30 pl-4 py-1">
+                                    <h4 className="text-xs font-black uppercase text-indigo-400 mb-1">{rec.category}</h4>
+                                    <p className="text-sm text-white/80 leading-relaxed">{rec.content}</p>
                                 </div>
                             ))}
                         </div>
