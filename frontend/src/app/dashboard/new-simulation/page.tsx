@@ -7,10 +7,11 @@ import {
     Code, Lightbulb, Upload, Briefcase, TrendingUp, TrendingDown,
     Sparkles, AlertCircle
 } from "lucide-react";
-import { analyzeResume, ResumeAnalysisResponse } from "@/lib/api";
+import { analyzeResume, ResumeAnalysisResponse, saveSessionAnalysis } from "@/lib/api";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { NeuralTextArea } from "@/components/ui/NeuralTextArea";
 import { MagneticButton } from "@/components/ui/MagneticButton";
+import { createClient } from "@/lib/supabase/client";
 
 const STEPS = [
     { id: 1, title: "Job Description", icon: Briefcase },
@@ -82,7 +83,7 @@ export default function NewSimulationPage() {
         }
     };
 
-    const startSimulation = () => {
+    const startSimulation = async () => {
         if (!analysisResult) return;
 
         const sessionName = analysisResult.profile?.current_role
@@ -100,7 +101,30 @@ export default function NewSimulationPage() {
             interviewType: interviewType,
             jobDescription: jobDescription
         };
+
+        // Save to localStorage for simulation page (quick access)
         localStorage.setItem("interview_session", JSON.stringify(session));
+
+        // Save to Supabase database for persistence
+        try {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+
+            await saveSessionAnalysis(
+                sessionId,
+                analysisResult.fit_analysis,
+                sessionName,
+                user?.id,
+                analysisResult.questions,
+                analysisResult.profile,
+                jobDescription,
+                interviewType
+            );
+            console.log("Session saved to database:", sessionId);
+        } catch (err) {
+            console.error("Failed to save session to database:", err);
+            // Continue anyway - localStorage backup exists
+        }
 
         router.push("/dashboard/simulation");
     };

@@ -461,7 +461,7 @@ export default function SimulationPage() {
         } finally {
             setIsProcessing(false);
         }
-    }, [isProcessing, session, isIntroPhase, currentIndex, speak, router]);
+    }, [isProcessing, session, isIntroPhase, currentIndex, speak, router, startListening, code, isTechnicalMode]);
 
     // Sync handleSubmit to ref to break cycle
     useEffect(() => {
@@ -659,7 +659,7 @@ export default function SimulationPage() {
             </div>
         );
     }
-        // Error State
+    // Error State
     if (connectionState === "error") {
         return (
             <div className="flex h-screen items-center justify-center bg-gray-900">
@@ -675,8 +675,8 @@ export default function SimulationPage() {
         );
     }
 
-       // Ensure session is loaded before rendering main content
-    if (! session) {
+    // Ensure session is loaded before rendering main content
+    if (!session) {
         return null;
     }
 
@@ -686,7 +686,7 @@ export default function SimulationPage() {
     }
 
     const currentQuestion = currentIndex >= 0 ? session.questions[currentIndex] : null;
-    
+
     const handleLeave = () => {
         window.speechSynthesis.cancel();
         if (recognitionRef.current) recognitionRef.current.stop();

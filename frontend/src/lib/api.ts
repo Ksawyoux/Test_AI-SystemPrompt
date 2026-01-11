@@ -142,10 +142,15 @@ export interface QuestionEvaluation extends EvaluationResponse {
 
 export async function saveSessionAnalysis(
     sessionId: string,
-    fitAnalysis: any,
+    fitAnalysis?: FitAnalysis,
     sessionName?: string,
-    userId?: string
-): Promise<void> {
+    userId?: string,
+    // NEW: Full session data for DB storage
+    questions?: Question[],
+    profile?: CandidateProfile,
+    jobDescription?: string,
+    interviewType?: string
+): Promise<{ status: string; session_id?: string }> {
     const response = await fetch(`${API_BASE_URL}/api/save-session-analysis`, {
         method: 'POST',
         headers: {
@@ -155,23 +160,34 @@ export async function saveSessionAnalysis(
             session_id: sessionId,
             fit_analysis: fitAnalysis,
             session_name: sessionName,
-            user_id: userId
+            user_id: userId,
+            questions: questions,
+            profile: profile,
+            job_description: jobDescription,
+            interview_type: interviewType
         }),
     });
 
     if (!response.ok) {
         console.error('Failed to save session analysis');
-        // Don't throw to avoid blocking the interview flow
+        return { status: 'error' };
     }
+
+    return response.json();
 }
 
 export interface SessionAnalysis {
     session_id: string;
-    fit_analysis: FitAnalysis;
+    fit_analysis?: FitAnalysis;
     session_name?: string;
     user_id?: string;
+    questions?: Question[];
+    profile?: CandidateProfile;
+    job_description?: string;
+    interview_type?: string;
     created_at?: string;
 }
+
 
 export async function getSessionAnalysis(
     sessionId: string,

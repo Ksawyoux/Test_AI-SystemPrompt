@@ -92,6 +92,18 @@ def check_db():
             
     return status
 
+@app.get("/api/debug/list-responses")
+def list_responses():
+    """Debug: List recent interview responses in DB"""
+    if not backend.db.supabase:
+        return {"error": "Supabase not initialized"}
+    
+    try:
+        result = backend.db.supabase.table("interview_responses").select("*").order("created_at", desc=True).limit(10).execute()
+        return {"count": len(result.data), "responses": result.data}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.post("/api/analyze-resume")
 async def analyze_resume(
     file: UploadFile = File(...),
@@ -153,7 +165,7 @@ async def evaluate_response(request: EvaluationRequest):
         # Convert Pydantic model to dict for the service function
         question_dict = request.question.model_dump()
         
-        evaluation = services.evaluate_single_response(model, question_dict, request.response_text)
+        evaluation = services.evaluate_single_response(model, question_dict, request.response_text, request.code_submission)
 
         # Store in Supabase if configured
         if backend.db.supabase and request.session_id:
@@ -166,8 +178,8 @@ async def evaluate_response(request: EvaluationRequest):
                     "response_text": request.response_text,
                     "evaluation": evaluation,
                 }
-                if request.session_name:
-                    data["session_name"] = request.session_name
+                # NOTE: session_name column doesn't exist in interview_responses table
+                # It's stored in session_analyses table instead
                 if request.user_id:
                     data["user_id"] = request.user_id
                 
@@ -253,13 +265,18 @@ async def get_token(request: TokenRequest):
 
 class SessionAnalysisRequest(BaseModel):
     session_id: str
-    fit_analysis: dict
+    fit_analysis: Optional[dict] = None
     session_name: Optional[str] = None
     user_id: Optional[str] = None
+    # NEW: Full session data for DB storage
+    questions: Optional[List[dict]] = None
+    profile: Optional[dict] = None
+    job_description: Optional[str] = None
+    interview_type: Optional[str] = None
 
 @app.post("/api/save-session-analysis")
 async def save_session_analysis(request: SessionAnalysisRequest):
-    """Save the CV fit analysis for a session."""
+    """Save the complete interview session to database."""
     
     if not backend.db.supabase:
         return {"status": "skipped", "message": "Database not configured"}
@@ -267,22 +284,36 @@ async def save_session_analysis(request: SessionAnalysisRequest):
     try:
         data = {
             "session_id": request.session_id,
-            "fit_analysis": request.fit_analysis,
             "session_name": request.session_name,
         }
+        
+        # Add optional fields if present
+        if request.fit_analysis:
+            data["fit_analysis"] = request.fit_analysis
         if request.user_id:
             data["user_id"] = request.user_id
+        if request.questions:
+            data["questions"] = request.questions
+        if request.profile:
+            data["profile"] = request.profile
+        if request.job_description:
+            data["job_description"] = request.job_description
+        if request.interview_type:
+            data["interview_type"] = request.interview_type
             
+        print(f"Saving session to DB: {request.session_id}", flush=True)
+        
         # Upsert - update if exists, insert if not
         backend.db.supabase.table("session_analyses").upsert(
             data, 
             on_conflict="session_id"
         ).execute()
         
-        return {"status": "success"}
+        return {"status": "success", "session_id": request.session_id}
     except Exception as e:
         print(f"Error saving session analysis: {e}")
         return {"status": "error", "message": str(e)}
+
 
 @app.get("/api/session-analysis/{session_id}")
 async def get_session_analysis(session_id: str, user_id: Optional[str] = None):
