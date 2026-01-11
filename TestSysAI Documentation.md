@@ -104,8 +104,13 @@ sequenceDiagram
     
     loop For Each Question
         U->>F: Answer Question (Voice/Text)
+        opt Technical Question with Code
+            U->>F: Write Code in Editor
+            F->>B: POST /api/execute-code
+            B-->>F: { output, error, execution_time }
+        end
         F->>B: POST /api/evaluate-response
-        B->>AI: Evaluate Response
+        B->>AI: Evaluate Response + Code
         AI-->>B: Score + Feedback
         B->>DB: Save Response
         B-->>F: Evaluation Result
@@ -150,8 +155,14 @@ sequenceDiagram
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/api/get-token` | POST | Generate LiveKit access token |
-| `/api/did/talk` | POST | Create D-ID talking avatar video |
+| `/api/did/create-talk` | POST | Create D-ID talking avatar video |
 | `/api/did/talk/{id}` | GET | Get D-ID video status/result |
+
+### Code Execution APIs
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/execute-code` | POST | Execute Python or JavaScript code in sandboxed environment |
 
 ---
 
@@ -484,6 +495,43 @@ OUTPUT FORMAT (JSON only):
 
 ---
 
+### 8. Code Execution
+
+**Function:** `execute_code()`  
+**Location:** `main.py:671-776`  
+**Purpose:** Safely execute Python or JavaScript code during technical interviews
+
+**Request:**
+
+```json
+{
+    "code": "print('Hello, World!')",
+    "language": "python"  // or "javascript"
+}
+```
+
+**Response:**
+
+```json
+{
+    "success": true,
+    "output": "Hello, World!\n",
+    "error": "",
+    "execution_time": 0.045,
+    "exit_code": 0
+}
+```
+
+**Security Features:**
+- 5-second timeout limit
+- 10KB output limit
+- Blocked dangerous imports (os, subprocess, sys, socket, shutil)
+- Blocked dangerous functions (eval, exec, open, compile, __import__)
+- Sandboxed execution in /tmp directory
+- Temporary files cleaned up after execution
+
+---
+
 ## Database Schema
 
 ### Tables (Supabase)
@@ -545,6 +593,8 @@ frontend/src/
 │   └── dashboard/
 │       ├── DashboardNavbar.tsx   # Dashboard navigation
 │       ├── InterviewCard.tsx     # Interview session card
+│       ├── CodeEditorPanel.tsx   # Monaco-based code editor with execution
+│       ├── PerformanceChart.tsx  # Recharts performance visualization
 │       └── RecommendationSidebar.tsx # AI Coach sidebar
 │
 ├── lib/
