@@ -8,7 +8,7 @@ from typing import Optional, Tuple, List
 import os
 
 # --- CONSTANTS ---
-MODEL_NAME = "gemini-2.5-flash"
+MODEL_NAME = "gemini-2.5-flash-lite"
 MAX_QUESTIONS = 10
 
 JD_TEMPLATE = """

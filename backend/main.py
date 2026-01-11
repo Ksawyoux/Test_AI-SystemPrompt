@@ -629,3 +629,148 @@ async def get_ai_recommendations(request: AIRecommendationsRequest):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Code Execution Endpoint ---
+
+import subprocess
+import tempfile
+import re
+
+class CodeExecutionRequest(BaseModel):
+    code: str
+    language: str  # "python" or "javascript"
+
+# Dangerous patterns to block in Python
+BLOCKED_PYTHON_IMPORTS = [
+    r'\bimport\s+os\b',
+    r'\bfrom\s+os\b',
+    r'\bimport\s+subprocess\b',
+    r'\bfrom\s+subprocess\b',
+    r'\bimport\s+sys\b',
+    r'\bfrom\s+sys\b',
+    r'\bimport\s+socket\b',
+    r'\bfrom\s+socket\b',
+    r'\bimport\s+shutil\b',
+    r'\bfrom\s+shutil\b',
+    r'\b__import__\b',
+    r'\beval\s*\(',
+    r'\bexec\s*\(',
+    r'\bopen\s*\(',
+    r'\bcompile\s*\(',
+]
+
+BLOCKED_JS_PATTERNS = [
+    r'\brequire\s*\(\s*[\'"]child_process[\'"]\s*\)',
+    r'\brequire\s*\(\s*[\'"]fs[\'"]\s*\)',
+    r'\brequire\s*\(\s*[\'"]net[\'"]\s*\)',
+    r'\bprocess\.env\b',
+    r'\bprocess\.exit\b',
+]
+
+@app.post("/api/execute-code")
+async def execute_code(request: CodeExecutionRequest):
+    """Execute Python or JavaScript code in a sandboxed subprocess."""
+    
+    code = request.code
+    language = request.language.lower()
+    
+    if language not in ["python", "javascript"]:
+        raise HTTPException(status_code=400, detail="Unsupported language. Use 'python' or 'javascript'.")
+    
+    # Security checks
+    if language == "python":
+        for pattern in BLOCKED_PYTHON_IMPORTS:
+            if re.search(pattern, code):
+                return {
+                    "success": False,
+                    "output": "",
+                    "error": f"Blocked: Dangerous operation detected. Code execution is sandboxed for security.",
+                    "execution_time": 0
+                }
+    elif language == "javascript":
+        for pattern in BLOCKED_JS_PATTERNS:
+            if re.search(pattern, code):
+                return {
+                    "success": False,
+                    "output": "",
+                    "error": f"Blocked: Dangerous operation detected. Code execution is sandboxed for security.",
+                    "execution_time": 0
+                }
+    
+    try:
+        import time
+        start_time = time.time()
+        
+        # Create temp file
+        suffix = ".py" if language == "python" else ".js"
+        with tempfile.NamedTemporaryFile(mode='w', suffix=suffix, delete=False) as f:
+            f.write(code)
+            temp_path = f.name
+        
+        try:
+            # Determine command
+            if language == "python":
+                cmd = ["python3", temp_path]
+            else:
+                cmd = ["node", temp_path]
+            
+            # Execute with timeout
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=5,  # 5 second timeout
+                cwd="/tmp"  # Run in temp directory
+            )
+            
+            execution_time = round(time.time() - start_time, 3)
+            
+            # Combine stdout and stderr
+            output = result.stdout
+            error = result.stderr
+            
+            # Limit output size (10KB max)
+            if len(output) > 10240:
+                output = output[:10240] + "\n... [Output truncated]"
+            if len(error) > 10240:
+                error = error[:10240] + "\n... [Error truncated]"
+            
+            return {
+                "success": result.returncode == 0,
+                "output": output,
+                "error": error,
+                "execution_time": execution_time,
+                "exit_code": result.returncode
+            }
+            
+        finally:
+            # Clean up temp file
+            import os as temp_os
+            try:
+                temp_os.unlink(temp_path)
+            except:
+                pass
+                
+    except subprocess.TimeoutExpired:
+        return {
+            "success": False,
+            "output": "",
+            "error": "Execution timed out (5 second limit exceeded)",
+            "execution_time": 5.0
+        }
+    except FileNotFoundError as e:
+        interpreter = "Python" if language == "python" else "Node.js"
+        return {
+            "success": False,
+            "output": "",
+            "error": f"{interpreter} interpreter not found on server",
+            "execution_time": 0
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "output": "",
+            "error": str(e),
+            "execution_time": 0
+        }

@@ -424,3 +424,43 @@ export async function getAIRecommendations(
 
     return response.json();
 }
+
+// Code Execution
+export interface CodeExecutionResponse {
+    success: boolean;
+    output: string;
+    error: string;
+    execution_time: number;
+    exit_code?: number;
+}
+
+export async function executeCode(
+    code: string,
+    language: string
+): Promise<CodeExecutionResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/execute-code`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code, language }),
+    });
+
+    if (!response.ok) {
+        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+        try {
+            const error = await response.json();
+            errorMessage = error.detail || errorMessage;
+        } catch {
+            // Response body was empty or not JSON
+        }
+        return {
+            success: false,
+            output: '',
+            error: errorMessage,
+            execution_time: 0
+        };
+    }
+
+    return response.json();
+}
