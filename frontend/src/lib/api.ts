@@ -71,7 +71,14 @@ export async function getLiveKitToken(roomName: string, participantName: string)
     });
 
     if (!response.ok) {
-        throw new Error('Failed to get LiveKit token');
+        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+        try {
+            const error = await response.json();
+            errorMessage = error.detail || errorMessage;
+        } catch {
+            // Response body was empty or not JSON
+        }
+        throw new Error(errorMessage);
     }
 
     const data = await response.json();
@@ -96,8 +103,14 @@ export async function analyzeResume(
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to analyze resume');
+        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+        try {
+            const error = await response.json();
+            errorMessage = error.detail || errorMessage;
+        } catch {
+            // Response body was empty or not JSON
+        }
+        throw new Error(errorMessage);
     }
 
     return response.json();
@@ -127,8 +140,14 @@ export async function evaluateResponse(
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to evaluate response');
+        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+        try {
+            const error = await response.json();
+            errorMessage = error.detail || errorMessage;
+        } catch {
+            // Response body was empty or not JSON
+        }
+        throw new Error(errorMessage);
     }
 
     return response.json();
@@ -237,8 +256,14 @@ export async function generateReport(
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to generate report');
+        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+        try {
+            const error = await response.json();
+            errorMessage = error.detail || errorMessage;
+        } catch {
+            // Response body was empty or not JSON
+        }
+        throw new Error(errorMessage);
     }
 
     return response.json();
@@ -264,8 +289,14 @@ export async function createDIDTalk(text: string, voiceId: string = "en-US-Jenny
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to create D-ID talk');
+        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+        try {
+            const error = await response.json();
+            errorMessage = error.detail || errorMessage;
+        } catch {
+            // Response body was empty or not JSON
+        }
+        throw new Error(errorMessage);
     }
 
     return response.json();
@@ -335,8 +366,14 @@ export async function queryReport(
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to query report');
+        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+        try {
+            const error = await response.json();
+            errorMessage = error.detail || errorMessage;
+        } catch {
+            // Response body was empty or not JSON
+        }
+        throw new Error(errorMessage);
     }
 
     return response.json();
@@ -375,8 +412,14 @@ export async function getAIRecommendations(
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to get AI recommendations');
+        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+        try {
+            const error = await response.json();
+            errorMessage = error.detail || errorMessage;
+        } catch {
+            // Response body was empty or not JSON
+        }
+        throw new Error(errorMessage);
     }
 
     return response.json();
