@@ -58,11 +58,11 @@ export default function SimulationPage() {
     const [isIntroPhase, setIsIntroPhase] = useState(true); // Start with intro
     const [isMuted, setIsMuted] = useState(false);
     const [isCameraOff, setIsCameraOff] = useState(false);
-    const [isAyaSpeaking, setIsAyaSpeaking] = useState(false);
-    const [ayaStatus, setAyaStatus] = useState<string>("Ready");
+    const [isAlixaSpeaking, setIsAlixaSpeaking] = useState(false);
+    const [alixaStatus, setAlixaStatus] = useState<string>("Ready");
     const [savedResponses, setSavedResponses] = useState<string[]>([]);
     const [isChatOpen, setIsChatOpen] = useState(false);
-    const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'aya', text: string }>>([]);
+    const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'alixa', text: string }>>([]);
     const [chatInput, setChatInput] = useState("");
     const [isTechnicalMode, setIsTechnicalMode] = useState(false);
     const [reactions, setReactions] = useState<Array<{ id: number, emoji: string, left: number }>>([]);
@@ -217,8 +217,8 @@ export default function SimulationPage() {
         if (typeof window === "undefined" || !window.speechSynthesis) return;
 
         window.speechSynthesis.cancel();
-        setIsAyaSpeaking(true);
-        setAyaStatus("Speaking");
+        setIsAlixaSpeaking(true);
+        setAlixaStatus("Speaking");
 
         // Refined humanization: Use commas for natural breath pauses 
         // rather than "...", which can sometimes cause robotic glitching.
@@ -281,8 +281,8 @@ export default function SimulationPage() {
         if (selectedVoice) utterance.voice = selectedVoice;
 
         utterance.onend = () => {
-            setIsAyaSpeaking(false);
-            setAyaStatus("Idle");
+            setIsAlixaSpeaking(false);
+            setAlixaStatus("Idle");
             if (onEnd) onEnd();
         };
 
@@ -313,7 +313,7 @@ export default function SimulationPage() {
             setIsProcessing(false); // Safety reset
             setTranscript("");
             transcriptRef.current = "";
-            setAyaStatus("Listening to you...");
+            setAlixaStatus("Listening to you...");
         };
 
         recognition.onresult = (event: any) => {
@@ -347,12 +347,12 @@ export default function SimulationPage() {
             // Ignore common non-critical errors
             if (event.error === "aborted" || event.error === "no-speech") {
                 setIsRecording(false);
-                setAyaStatus("Ready");
+                setAlixaStatus("Ready");
                 return;
             }
             console.warn("Speech recognition error:", event.error);
             setIsRecording(false);
-            setAyaStatus("Ready");
+            setAlixaStatus("Ready");
         };
 
         recognition.onend = () => {
@@ -362,13 +362,13 @@ export default function SimulationPage() {
                 setSavedResponses(prev => [...prev, transcriptRef.current]);
                 handleSubmitRef.current();
             } else {
-                setAyaStatus("Ready");
+                setAlixaStatus("Ready");
             }
         };
 
         recognitionRef.current = recognition;
         recognition.start();
-    }, [isMuted, isProcessing, isAyaSpeaking, session]);
+    }, [isMuted, isProcessing, isAlixaSpeaking, session]);
 
     const handleSubmit = useCallback(async () => {
         if (isProcessing || !session) return;
@@ -392,13 +392,13 @@ export default function SimulationPage() {
         }
 
         setIsProcessing(true);
-        setAyaStatus("Processing your response...");
+        setAlixaStatus("Processing your response...");
 
         // Safety timeout to prevent infinite processing state
         const safetyTimeout = setTimeout(() => {
             if (isProcessing) {
                 setIsProcessing(false);
-                setAyaStatus("Ready");
+                setAlixaStatus("Ready");
                 console.warn("Forced processing reset due to timeout");
             }
         }, 30000); // 30s timeout
@@ -492,13 +492,13 @@ export default function SimulationPage() {
             setIsIntroPhase(false);
             setCurrentIndex(0);
             transcriptRef.current = "";
-            const ayaResponse = "Great, thank you for that introduction. Let's begin with the first question.";
-            setChatMessages(prev => [...prev, { role: 'aya', text: ayaResponse }]);
-            speak(ayaResponse, () => {
+            const alixaResponse = "Great, thank you for that introduction. Let's begin with the first question.";
+            setChatMessages(prev => [...prev, { role: 'alixa', text: alixaResponse }]);
+            speak(alixaResponse, () => {
                 setTimeout(() => {
                     if (session.questions[0]) {
                         const q = session.questions[0].question_text;
-                        setChatMessages(prev => [...prev, { role: 'aya', text: q }]);
+                        setChatMessages(prev => [...prev, { role: 'alixa', text: q }]);
                         speak(q, () => startListening()); // Auto-listen for chat flow too
                     }
                 }, 300);
@@ -507,7 +507,7 @@ export default function SimulationPage() {
         }
 
         setIsProcessing(true);
-        setAyaStatus("Processing your response...");
+        setAlixaStatus("Processing your response...");
         const question = session.questions[currentIndex];
 
         try {
@@ -521,17 +521,17 @@ export default function SimulationPage() {
                 setCurrentIndex(prev => prev + 1);
                 transcriptRef.current = "";
                 const transition = evaluation.conversational_response || "Okay, let's move on to the next question.";
-                setChatMessages(prev => [...prev, { role: 'aya', text: transition }]);
+                setChatMessages(prev => [...prev, { role: 'alixa', text: transition }]);
                 speak(transition, () => {
                     setTimeout(() => {
                         const nextQ = session.questions[currentIndex + 1].question_text;
-                        setChatMessages(prev => [...prev, { role: 'aya', text: nextQ }]);
+                        setChatMessages(prev => [...prev, { role: 'alixa', text: nextQ }]);
                         speak(nextQ, () => startListening()); // Auto-listen
                     }, 300);
                 });
             } else {
                 const farewell = "Thank you for completing the interview. I'm generating your detailed report now.";
-                setChatMessages(prev => [...prev, { role: 'aya', text: farewell }]);
+                setChatMessages(prev => [...prev, { role: 'alixa', text: farewell }]);
                 speak(farewell, () => {
                     setTimeout(() => router.push(`/dashboard/report/${session.sessionId}`), 1500);
                 });
@@ -539,7 +539,7 @@ export default function SimulationPage() {
         } catch (e) {
             console.error("Evaluation failed", e);
             const errorMsg = "I had trouble processing that. Let me move on to the next question.";
-            setChatMessages(prev => [...prev, { role: 'aya', text: errorMsg }]);
+            setChatMessages(prev => [...prev, { role: 'alixa', text: errorMsg }]);
             speak(errorMsg, () => {
                 setTimeout(() => {
                     if (currentIndex < session.questions.length - 1) {
@@ -563,15 +563,15 @@ export default function SimulationPage() {
         }
     };
 
-    // Play Aya's introduction when session loads
+    // Play Alixa's introduction when session loads
     useEffect(() => {
         if (session && connectionState === "connected" && !hasPlayedIntro) {
             const browserLang = navigator.language || "en-US";
             const isEnglish = !browserLang.startsWith("fr");
 
             const introMessage = isEnglish
-                ? "Hello! I'm Aya, and I'll be your interviewer today. When you're ready to answer, just click the microphone button. After you stop speaking for 5 seconds, I'll automatically process your response. Let's start with something easy - please introduce yourself."
-                : "Bonjour ! Je suis Aya, et je serai votre intervieweuse aujourd'hui. Quand vous êtes prêt à répondre, cliquez simplement sur le bouton du microphone. Après 5 secondes de silence, je traiterai automatiquement votre réponse. Commençons par quelque chose de simple - présentez-vous s'il vous plaît.";
+                ? "Hey! I'm Alixa, and I'll be your interviewer today. When you're ready to answer, just click the microphone button. After you stop speaking for 5 seconds, I'll automatically process your response. Let's start with something easy - please introduce yourself."
+                : "Bonjour ! Je suis Alixa, et je serai votre intervieweuse aujourd'hui. Quand vous êtes prêt à répondre, cliquez simplement sur le bouton du microphone. Après 5 secondes de silence, je traiterai automatiquement votre réponse. Commençons par quelque chose de simple - présentez-vous s'il vous plaît.";
 
             // Wait for voices to load
             const speakIntro = () => {
@@ -786,13 +786,13 @@ export default function SimulationPage() {
 
             {/* Main Video Area */}
             <div className="flex-1 relative flex overflow-hidden">
-                {/* Aya's Large Video Panel - Enhanced */}
+                {/* Alixa's Large Video Panel - Enhanced */}
                 <div className={`relative bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f13] transition-all duration-300 ${isTechnicalMode ? "w-1/2 border-r border-white/10" : "flex-1"
                     }`}>
                     {/* Animated Avatar */}
                     <div className="absolute inset-0 flex items-center justify-center">
                         <AnimatedAvatar
-                            isSpeaking={isAyaSpeaking}
+                            isSpeaking={isAlixaSpeaking}
                             avatarImage="/aya-avatar.png"
                             size={320}
                         />
@@ -800,16 +800,16 @@ export default function SimulationPage() {
 
                     {/* Speaker Name Overlay with Animation */}
                     <div className="absolute bottom-4 left-4 flex items-center gap-3 z-10">
-                        <div className={`px-4 py-2 rounded-lg flex items-center gap-3 ${isAyaSpeaking ? "bg-green-600" : "bg-black/70"
+                        <div className={`px-4 py-2 rounded-lg flex items-center gap-3 ${isAlixaSpeaking ? "bg-green-600" : "bg-black/70"
                             }`}>
-                            {isAyaSpeaking && <AudioWave isActive={true} color="bg-white" />}
+                            {isAlixaSpeaking && <AudioWave isActive={true} color="bg-white" />}
                             <span className="text-white text-sm font-medium">
-                                Aya {isAyaSpeaking ? "- Speaking" : isRecording ? "- Listening" : ""}
+                                Alixa {isAlixaSpeaking ? "- Speaking" : isRecording ? "- Listening" : ""}
                             </span>
                         </div>
-                        {ayaStatus !== "Ready" && !isAyaSpeaking && (
+                        {alixaStatus !== "Ready" && !isAlixaSpeaking && (
                             <div className="bg-black/70 px-3 py-2 rounded-lg">
-                                <span className="text-gray-300 text-sm">{ayaStatus}</span>
+                                <span className="text-gray-300 text-sm">{alixaStatus}</span>
                             </div>
                         )}
                     </div>
