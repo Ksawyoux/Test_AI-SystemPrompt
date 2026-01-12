@@ -13,6 +13,7 @@
 5. [AI Prompts Reference](#ai-prompts-reference)
 6. [Database Schema](#database-schema)
 7. [Frontend Structure](#frontend-structure)
+8. [AI Evaluation Suite](#ai-evaluation-suite)
 
 ---
 
@@ -567,6 +568,68 @@ user_id         UUID REFERENCES auth.users
 fit_analysis    JSONB
 interview_type  TEXT
 created_at      TIMESTAMPTZ DEFAULT NOW()
+```
+
+---
+
+## AI Evaluation Suite
+
+The **AI Eval** directory typically located at the project root contains a specialized suite for evaluating the quality, accuracy, and fairness of the AI interviewer's feedback.
+
+### Key Components
+
+#### 1. Agent Response Assessment
+**File:** `agent_response_assessment.py`
+- **Purpose:** Evaluate the factual correctness and accuracy of AI agent outputs.
+- **Method:** Uses basic exact-match accuracy metrics (customizable for strictness).
+- **Usage:** Validates that the agent returns expected answers for deterministic queries.
+
+#### 2. LLM-as-a-Judge Framework
+**File:** `llm_as_judge.py`
+- **Purpose:** Evaluate subjective qualities of the AI's feedback (Helpfulness, Specificity, Accuracy, Constructiveness, Fairness).
+- **Method:** Uses a powerful LLM (Gemini 2.5) as a meta-evaluator to judge the primary AI's performance.
+- **Integration:** Connects directly to Supabase to fetch real interview evaluations.
+
+#### 3. Interactive Evaluation Dashboard
+**File:** `dashboard.py`
+- **Purpose:** A visual interface for analyzing AI performance and managing the prompt optimization loop.
+- **Features:** 
+  - **Metrics**: Real-time view of Average Quality, Helpfulness, and Calibration Bias.
+  - **Visuals**: Charts comparing AI scores vs. Judge scores and qualitative radar plots.
+  - **Inspection**: Detailed view of full evaluation rationale and JSON data.
+  - **Optimizer**: UI for running the Advanced Prompt Optimization Loop.
+
+#### 4. Contract Revision System (Advanced Prompt Optimizer)
+**File:** `advanced_prompt_optimizer.py`
+- **Purpose:** A closed-loop system to automatically improve the AI's prompts based on evaluation evidence.
+- **5-Stage Architecture:**
+  1. **Collect Evidence**: Aggregates human/LLM judge scores and failure patterns.
+  2. **Analyze Patterns**: Identifies root causes (e.g., "AI is too lenient" or "Feedback is vague").
+  3. **Generate Candidates**: Brainstorms multiple prompt variations ("Fixer", "Socratic", "Auditor").
+  4. **A/B Test**: Simulates performance on a "Golden Set" of known test cases to find the winner.
+  5. **Deploy**: Selects the best performing prompt and prepares it for production deployment.
+
+### Evaluation Workflow
+
+1. **Fetch Evaluations**: The system retrieves recent interview sessions and their corresponding AI evaluations from Supabase.
+2. **Meta-Evaluation**: The "Judge" LLM analyzes the interview question, candidate response, and the AI's feedback.
+3. **Scoring**: The Judge scores the AI's feedback on a 1-5 scale across multiple dimensions:
+   - **Helpfulness**: Is the feedback actionable?
+   - **Specificity**: Does it reference specific parts of the answer?
+   - **Accuracy**: Is the assessment factually correct?
+   - **Constructiveness**: Is the tone encouraging?
+   - **Fairness**: Is the score well-calibrated?
+4. **Reporting**: Results are displayed in a detailed CLI table and saved to `eval_results.json`.
+
+**Running the Evaluation & Dashboard:**
+```bash
+cd "AI Eval"
+
+# 1. Run the backend evaluation engine
+python3.11 llm_as_judge.py
+
+# 2. Launch the visual dashboard
+streamlit run dashboard.py
 ```
 
 ---
